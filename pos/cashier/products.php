@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 session_start();
 include('config/config.php');
 include('config/checklogin.php');
@@ -27,6 +29,27 @@ if (isset($_POST['toggleStatus'])) {
     header("Location: products.php");
     exit();
 }
+// Handle filters and pagination
+$where = [];
+$params = [];
+if (isset($_GET['status']) && $_GET['status'] !== '') {
+    $where[] = 'status = ?';
+    $params[] = $_GET['status'];
+}
+if (isset($_GET['category']) && $_GET['category'] !== '') {
+    $where[] = 'category = ?';
+    $params[] = $_GET['category'];
+}
+if (isset($_GET['search']) && $_GET['search'] !== '') {
+    $where[] = '(prod_name LIKE ? OR prod_code LIKE ?)';
+    $params[] = '%' . $_GET['search'] . '%';
+    $params[] = '%' . $_GET['search'] . '%';
+}
+$where_sql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+// Remove all pagination logic
+// Remove: $page, $per_page, $offset, $total_pages, and pagination nav UI
+// Only keep the SQL and display logic for all products
+// Remove the pagination nav section at the bottom of the page
 require_once('partials/_head.php');
 ?>
 
@@ -68,6 +91,21 @@ require_once('partials/_head.php');
                             </a> -->
                         </div>
                         <div class="table-responsive">
+                            <form class="form-inline mb-3" method="get">
+                                <input type="text" name="search" class="form-control mr-2"
+                                    placeholder="Search name/code"
+                                    value="<?php echo isset($_GET['search']) ? htmlspecialchars($_GET['search']) : ''; ?>">
+                                <select name="status" class="form-control mr-2">
+                                    <option value="">All Status</option>
+                                    <option value="active" <?php if (isset($_GET['status']) && $_GET['status'] === 'active')
+                                        echo 'selected'; ?>>Active</option>
+                                    <option value="inactive" <?php if (isset($_GET['status']) && $_GET['status'] === 'inactive')
+                                        echo 'selected'; ?>>Inactive</option>
+                                </select>
+                                <input type="text" name="category" class="form-control mr-2" placeholder="Category"
+                                    value="<?php echo isset($_GET['category']) ? htmlspecialchars($_GET['category']) : ''; ?>">
+                                <button type="submit" class="btn btn-primary">Filter</button>
+                            </form>
                             <table class="table align-items-center table-flush">
                                 <thead class="thead-light">
                                     <tr>
@@ -83,67 +121,83 @@ require_once('partials/_head.php');
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $ret = "SELECT * FROM  rpos_products  ORDER BY `rpos_products`.`created_at` DESC ";
+                                    // Remove pagination for debugging
+                                    $ret = "SELECT * FROM rpos_products $where_sql";
                                     $stmt = $mysqli->prepare($ret);
+                                    if ($stmt === false) {
+                                        die("Query Error: " . $mysqli->error);
+                                    }
+                                    if ($params) {
+                                        $stmt->bind_param(str_repeat('s', count($params)), ...$params);
+                                    }
                                     $stmt->execute();
                                     $res = $stmt->get_result();
-                                    while ($prod = $res->fetch_object()) {
-                                        ?>
-                                        <tr>
-                                            <td>
-                                                <?php
-                                                if ($prod->prod_img) {
-                                                    echo "<img src='../admin/assets/img/products/$prod->prod_img' height='60' width='60' class='img-thumbnail'>";
-                                                } else {
-                                                    echo "<img src='../admin/assets/img/products/default.jpg' height='60' width='60' class='img-thumbnail'>";
-                                                }
-                                                ?>
-                                                <br>
-                                                <div id="qr_<?php echo $prod->prod_id; ?>" class="qr-div"></div>
-                                                <button type="button" class="btn btn-sm btn-info mt-1"
-                                                    onclick="downloadQR('<?php echo $prod->prod_id; ?>')">Download
-                                                    QR</button>
-                                            </td>
-                                            <td><?php echo $prod->prod_code; ?></td>
-                                            <td><?php echo $prod->prod_name; ?></td>
-                                            <td><?php echo $prod->category; ?></td>
-                                            <td>$ <?php echo $prod->prod_price; ?></td>
-                                            <td>
-                                                <span
-                                                    class="badge badge-<?php echo $prod->status == 'active' ? 'success' : 'danger'; ?> p-2"
-                                                    style="font-size: 1em;">
-                                                    <?php echo ucfirst($prod->status); ?>
-                                                </span>
-                                                <form method="POST" style="display:inline;">
-                                                    <input type="hidden" name="toggle_id"
-                                                        value="<?php echo $prod->prod_id; ?>">
-                                                    <input type="hidden" name="new_status"
-                                                        value="<?php echo $prod->status == 'active' ? 'inactive' : 'active'; ?>">
-                                                    <button type="submit" name="toggleStatus"
-                                                        class="btn btn-sm btn-outline-<?php echo $prod->status == 'active' ? 'danger' : 'success'; ?> ml-2">
-                                                        <?php echo $prod->status == 'active' ? 'Deactivate' : 'Activate'; ?>
-                                                    </button>
-                                                </form>
-                                            </td>
-                                            <td>
-                                                <span class="badge badge-info p-2" style="font-size: 1em;">
-                                                    <?php echo $prod->quantity; ?> in stock
-                                                </span>
-                                                <?php if ($prod->quantity <= $prod->min_stocks) { ?>
-                                                    <span class="badge badge-warning p-2 ml-1" style="font-size: 1em;">Low
-                                                        Stock!</span>
-                                                <?php } ?>
-                                            </td>
-                                            <td>
-                                                <a href="update_product.php?update=<?php echo $prod->prod_id; ?>">
-                                                    <button class="btn btn-sm btn-primary">
-                                                        <i class="fas fa-edit"></i>
-                                                        Update
-                                                    </button>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    <?php } ?>
+                                    if ($res === false) {
+                                        echo '<div style="color:red;">get_result() failed: ' . $stmt->error . '</div>';
+                                    }
+                                    if ($res && $res->num_rows > 0) {
+                                        while ($prod = $res->fetch_object()) {
+                                            ?>
+                                            <tr>
+                                                <td>
+                                                    <?php
+                                                    if ($prod->prod_img) {
+                                                        echo "<img src='../admin/assets/img/products/$prod->prod_img' height='60' width='60' class='img-thumbnail'>";
+                                                    } else {
+                                                        echo "<img src='../admin/assets/img/products/default.jpg' height='60' width='60' class='img-thumbnail'>";
+                                                    }
+                                                    ?>
+                                                    <br>
+                                                    <div id="qr_<?php echo $prod->prod_id; ?>" class="qr-div"></div>
+                                                    <button type="button" class="btn btn-sm btn-info mt-1"
+                                                        onclick="downloadQR('<?php echo $prod->prod_id; ?>')">Download
+                                                        QR</button>
+                                                </td>
+                                                <td><?php echo $prod->prod_code; ?></td>
+                                                <td><?php echo $prod->prod_name; ?></td>
+                                                <td><?php echo $prod->category ? htmlspecialchars($prod->category) : 'Uncategorized'; ?>
+                                                </td>
+                                                <td>$ <?php echo $prod->prod_price; ?></td>
+                                                <td>
+                                                    <span
+                                                        class="badge badge-<?php echo $prod->status == 'active' ? 'success' : 'danger'; ?> p-2"
+                                                        style="font-size: 1em;">
+                                                        <?php echo ucfirst($prod->status); ?>
+                                                    </span>
+                                                    <form method="POST" style="display:inline;">
+                                                        <input type="hidden" name="toggle_id"
+                                                            value="<?php echo $prod->prod_id; ?>">
+                                                        <input type="hidden" name="new_status"
+                                                            value="<?php echo $prod->status == 'active' ? 'inactive' : 'active'; ?>">
+                                                        <button type="submit" name="toggleStatus"
+                                                            class="btn btn-sm btn-outline-<?php echo $prod->status == 'active' ? 'danger' : 'success'; ?> ml-2">
+                                                            <?php echo $prod->status == 'active' ? 'Deactivate' : 'Activate'; ?>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                                <td>
+                                                    <span class="badge badge-info p-2" style="font-size: 1em;">
+                                                        <?php echo $prod->quantity; ?> in stock
+                                                    </span>
+                                                    <?php if ($prod->quantity <= $prod->min_stocks) { ?>
+                                                        <span class="badge badge-warning p-2 ml-1" style="font-size: 1em;">Low
+                                                            Stock!</span>
+                                                    <?php } ?>
+                                                </td>
+                                                <td>
+                                                    <a href="update_product.php?update=<?php echo $prod->prod_id; ?>">
+                                                        <button class="btn btn-sm btn-primary">
+                                                            <i class="fas fa-edit"></i>
+                                                            Update
+                                                        </button>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        <?php }
+                                    } else {
+                                        echo '<tr><td colspan="8" class="text-center">No products found.</td></tr>';
+                                    }
+                                    ?>
                                 </tbody>
                             </table>
                         </div>
@@ -193,6 +247,7 @@ require_once('partials/_head.php');
                 });
             });
         });
+
         function downloadQR(prodId) {
             var qrDiv = document.getElementById('qr_' + prodId);
             var img = qrDiv.querySelector('img');
