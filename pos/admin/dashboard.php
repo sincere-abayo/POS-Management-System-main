@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 include('config/config.php');
 include('config/checklogin.php');
@@ -12,18 +13,19 @@ require_once('partials/_analytics.php');
   <?php
   require_once('partials/_sidebar.php');
   ?>
-	
+
   <!-- Main content -->
   <div class="main-content">
     <!-- Top navbar -->
-	  
+
     <?php
     require_once('partials/_topnav.php');
     ?>
-	
-	  
+
+
     <!-- Header -->
-    <div style="background-image: url(assets/img/theme/restro00.jpg); background-size: cover;" class="header  pb-8 pt-5 pt-md-8">
+    <div style="background-image: url(assets/img/theme/restro00.jpg); background-size: cover;"
+      class="header  pb-8 pt-5 pt-md-8">
       <span class="mask bg-gradient-dark opacity-8"></span>
       <div class="container-fluid">
         <div class="header-body">
@@ -46,7 +48,7 @@ require_once('partials/_analytics.php');
                 </div>
               </div>
             </div>
-		  
+
             <div class="col-xl-3 col-lg-6">
               <div class="card card-stats mb-4 mb-xl-0">
                 <div class="card-body">
@@ -64,7 +66,7 @@ require_once('partials/_analytics.php');
                 </div>
               </div>
             </div>
-		  
+
             <div class="col-xl-3 col-lg-6">
               <div class="card card-stats mb-4 mb-xl-0">
                 <div class="card-body">
@@ -82,7 +84,7 @@ require_once('partials/_analytics.php');
                 </div>
               </div>
             </div>
-		  
+
             <div class="col-xl-3 col-lg-6">
               <div class="card card-stats mb-4 mb-xl-0">
                 <div class="card-body">
@@ -104,7 +106,7 @@ require_once('partials/_analytics.php');
         </div>
       </div>
     </div>
-	  
+
     <!-- Page content -->
     <div class="container-fluid mt--7">
       <div class="row mt-5">
@@ -142,11 +144,11 @@ require_once('partials/_analytics.php');
                   $stmt->execute();
                   $res = $stmt->get_result();
                   while ($order = $res->fetch_object()) {
-                    $price = (float) $order->prod_price;  
-                    $qty = (int) $order->prod_qty;        
-                    $total = $price * $qty;              
-                ?>
-                
+                    $price = (float) $order->prod_price;
+                    $qty = (int) $order->prod_qty;
+                    $total = $price * $qty;
+                    ?>
+
                     <tr>
                       <th class="text-success" scope="row"><?php echo $order->order_code; ?></th>
                       <td><?php echo $order->customer_name; ?></td>
@@ -155,11 +157,13 @@ require_once('partials/_analytics.php');
                       <td class="text-success"><?php echo $order->prod_qty; ?></td>
                       <td>$<?php echo $total; ?></td>
                       <td><?php if ($order->order_status == '') {
-                            echo "<span class='badge badge-danger'>Not Paid</span>";
-                          } else {
-                            echo "<span class='badge badge-success'>$order->order_status</span>";
-                          } ?></td>
-                      <td class="text-success"><?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></td>
+                        echo "<span class='badge badge-danger'>Not Paid</span>";
+                      } else {
+                        echo "<span class='badge badge-success'>$order->order_status</span>";
+                      } ?></td>
+                      <td class="text-success">
+                        <?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?>
+                      </td>
                     </tr>
                   <?php } ?>
                 </tbody>
@@ -168,7 +172,7 @@ require_once('partials/_analytics.php');
           </div>
         </div>
       </div>
-	
+
       <div class="row mt-5">
         <div class="col-xl-12">
           <div class="card shadow">
@@ -199,13 +203,13 @@ require_once('partials/_analytics.php');
                   $stmt->execute();
                   $res = $stmt->get_result();
                   while ($payment = $res->fetch_object()) {
-                  ?>
+                    ?>
                     <tr>
                       <th class="text-success" scope="row">
                         <?php echo $payment->pay_code; ?>
                       </th>
                       <td>
-                        $<?php echo $payment->pay_amt; ?>
+                        $<?php echo $payment->amount; ?>
                       </td>
                       <td class='text-success'>
                         <?php echo $payment->order_code; ?>
