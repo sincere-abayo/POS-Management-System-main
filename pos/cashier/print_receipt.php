@@ -3,6 +3,118 @@ session_start();
 include('config/config.php');
 include('config/checklogin.php');
 check_login();
+
+// Handle email receipt functionality
+if (isset($_GET['email']) && $_GET['email'] == 1 && isset($_GET['order_id'])) {
+    require_once __DIR__ . '/../../vendor/autoload.php';
+    $order_id = intval($_GET['order_id']);
+    $ret = "SELECT o.*, c.customer_name, c.customer_phoneno, c.customer_email FROM rpos_orders o LEFT JOIN rpos_customers c ON o.customer_id = c.customer_id WHERE o.order_id = ?";
+    $stmt = $mysqli->prepare($ret);
+    $stmt->bind_param('i', $order_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    if (!($order = $res->fetch_object())) {
+        $email_status = "Order not found.";
+    } else {
+        $items = json_decode($order->items, true);
+        $customer_email = $order->customer_email;
+        $customer_name = $order->customer_name;
+        $total = 0;
+
+        // Generate receipt HTML
+        ob_start();
+        ?>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px;">
+                <h2 style="color: #333; margin: 0;">BEST FRIEND SUPERMARKET</h2>
+                <p style="margin: 5px 0;">KIGALI, Kimironko</p>
+                <p style="margin: 5px 0;">0785617132</p>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <h3 style="color: #333; text-align: center;">Receipt for Order #<?php echo $order_id; ?></h3>
+                <p><strong>Customer:</strong> <?php echo htmlspecialchars($customer_name); ?></p>
+                <p><strong>Phone:</strong> <?php echo htmlspecialchars($order->customer_phoneno); ?></p>
+                <p><strong>Date:</strong> <?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></p>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa;">
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Item</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Code</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">Qty</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Unit Price</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: right;">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php
+                    if (is_array($items) && count($items) > 0) {
+                        foreach ($items as $prod) {
+                            $prod_name = isset($prod['prod_name']) ? $prod['prod_name'] : '-';
+                            $prod_code = isset($prod['prod_code']) ? $prod['prod_code'] : '';
+                            $prod_qty = isset($prod['prod_qty']) ? $prod['prod_qty'] : 0;
+                            $prod_price = isset($prod['prod_price']) ? $prod['prod_price'] : 0;
+                            $subtotal = (is_numeric($prod_price) && is_numeric($prod_qty)) ? ($prod_price * $prod_qty) : 0;
+                            $total += $subtotal;
+                            echo '<tr>';
+                            echo '<td style="border: 1px solid #ddd; padding: 8px;">' . htmlspecialchars($prod_name) . '</td>';
+                            echo '<td style="border: 1px solid #ddd; padding: 8px;">' . htmlspecialchars($prod_code) . '</td>';
+                            echo '<td style="border: 1px solid #ddd; padding: 8px; text-align: center;">' . htmlspecialchars($prod_qty) . '</td>';
+                            echo '<td style="border: 1px solid #ddd; padding: 8px; text-align: right;">RWF ' . htmlspecialchars($prod_price) . '</td>';
+                            echo '<td style="border: 1px solid #ddd; padding: 8px; text-align: right;">RWF ' . htmlspecialchars($subtotal) . '</td>';
+                            echo '</tr>';
+                        }
+                    }
+                    ?>
+                </tbody>
+                <tfoot>
+                    <tr style="background-color: #f8f9fa; font-weight: bold;">
+                        <td colspan="4" style="border: 1px solid #ddd; padding: 8px; text-align: right;"><strong>Total</strong>
+                        </td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: right;"><strong>RWF
+                                <?php echo htmlspecialchars($total); ?></strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
+                <p style="color: #666; font-size: 14px;">Thank you for your purchase!</p>
+                <p style="color: #666; font-size: 12px;">Please keep this receipt for your records.</p>
+            </div>
+        </div>
+        <?php
+        $receipt_html = ob_get_clean();
+
+        // Send email using PHPMailer
+        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+        try {
+            // Server settings
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'infofonepo@gmail.com';
+            $mail->Password = 'zaoxwuezfjpglwjb';
+            $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
+
+            // Recipients
+            $mail->setFrom('infofonepo@gmail.com', 'Best Friend Supermarket');
+            $mail->addAddress($customer_email, $customer_name);
+
+            // Content
+            $mail->isHTML(true);
+            $mail->Subject = 'Your Receipt for Order #' . $order_id . ' - Best Friend Supermarket';
+            $mail->Body = $receipt_html;
+
+            $mail->send();
+            $email_status = 'Receipt emailed successfully to ' . htmlspecialchars($customer_email);
+        } catch (Exception $e) {
+            $email_status = 'Email could not be sent. Mailer Error: ' . $mail->ErrorInfo;
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -25,9 +137,9 @@ check_login();
     <script src="assets/js/bootstrap.js"></script>
     <script src="assets/js/jquery.js"></script>
     <style>
-    body {
-        margin-top: 20px;
-    }
+        body {
+            margin-top: 20px;
+        }
     </style>
 </head>
 <?php
@@ -53,6 +165,9 @@ $customer_email = ($order->customer_email && strpos($order->customer_email, '@no
 
 <body>
     <div class="container">
+        <?php if (isset($email_status)) { ?>
+            <div class="alert alert-info text-center"><?php echo $email_status; ?></div>
+        <?php } ?>
         <div class="row">
             <div id="Receipt" class="well col-xs-10 col-sm-10 col-md-6 col-xs-offset-1 col-sm-offset-1 col-md-offset-3">
                 <div class="row">
@@ -84,7 +199,7 @@ $customer_email = ($order->customer_email && strpos($order->customer_email, '@no
                         <b>Customer:</b> <?php echo htmlspecialchars($customer_name); ?><br>
                         <b>Phone:</b> <?php echo htmlspecialchars($customer_phone); ?><br>
                         <?php if ($customer_email !== '-') { ?>
-                        <b>Email:</b> <?php echo htmlspecialchars($customer_email); ?><br>
+                            <b>Email:</b> <?php echo htmlspecialchars($customer_email); ?><br>
                         <?php } ?>
                     </div>
                     <table class="table table-bordered">
@@ -132,8 +247,8 @@ $customer_email = ($order->customer_email && strpos($order->customer_email, '@no
                         <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print"></i> Print
                             Receipt</button>
                         <?php if ($customer_email !== '-') { ?>
-                        <a href="?order_id=<?php echo $order_id; ?>&email=1" class="btn btn-info ml-2"><i
-                                class="fas fa-envelope"></i> Email Receipt</a>
+                            <a href="?order_id=<?php echo $order_id; ?>&email=1" class="btn btn-info ml-2"><i
+                                    class="fas fa-envelope"></i> Email Receipt</a>
                         <?php } ?>
                     </div>
                 </div>
@@ -144,11 +259,11 @@ $customer_email = ($order->customer_email && strpos($order->customer_email, '@no
 
 </html>
 <script>
-function printContent(el) {
-    var restorepage = $('body').html();
-    var printcontent = $('#' + el).clone();
-    $('body').empty().html(printcontent);
-    window.print();
-    $('body').html(restorepage);
-}
+    function printContent(el) {
+        var restorepage = $('body').html();
+        var printcontent = $('#' + el).clone();
+        $('body').empty().html(printcontent);
+        window.print();
+        $('body').html(restorepage);
+    }
 </script>
