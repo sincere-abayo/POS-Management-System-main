@@ -19,8 +19,9 @@ require_once('partials/_head.php');
     require_once('partials/_topnav.php');
     ?>
     <!-- Header -->
-    <div style="background-image: url(../admin/assets/img/theme/restro00.jpg); background-size: cover;" class="header  pb-8 pt-5 pt-md-8">
-    <span class="mask bg-gradient-dark opacity-8"></span>
+    <div style="background-image: url(../admin/assets/img/theme/restro00.jpg); background-size: cover;"
+      class="header  pb-8 pt-5 pt-md-8">
+      <span class="mask bg-gradient-dark opacity-8"></span>
       <div class="container-fluid">
         <div class="header-body">
         </div>
@@ -53,7 +54,7 @@ require_once('partials/_head.php');
                   $stmt->execute();
                   $res = $stmt->get_result();
                   while ($prod = $res->fetch_object()) {
-                  ?>
+                    ?>
                     <tr>
                       <td>
                         <?php
@@ -69,7 +70,8 @@ require_once('partials/_head.php');
                       <td><?php echo $prod->prod_name; ?></td>
                       <td>$ <?php echo $prod->prod_price; ?></td>
                       <td>
-                        <a href="make_oder.php?prod_id=<?php echo $prod->prod_id; ?>&prod_name=<?php echo $prod->prod_name; ?>&prod_price=<?php echo $prod->prod_price; ?>">
+                        <a
+                          href="make_order.php?prod_id=<?php echo $prod->prod_id; ?>&prod_name=<?php echo $prod->prod_name; ?>&prod_price=<?php echo $prod->prod_price; ?>">
                           <button class="btn btn-sm btn-warning">
                             <i class="fas fa-cart-plus"></i>
                             Place Order
