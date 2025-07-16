@@ -27,9 +27,9 @@
     <?php if (isset($success)) { ?>
         <!--This code for injecting success alert-->
         <script>
-            setTimeout(function() {
-                    swal("Success", "<?php echo $success; ?>", "success");
-                },
+            setTimeout(function () {
+                swal("Success", "<?php echo $success; ?>", "success");
+            },
                 100);
         </script>
 
@@ -37,9 +37,9 @@
     <?php if (isset($err)) { ?>
         <!--This code for injecting error alert-->
         <script>
-            setTimeout(function() {
-                    swal("Failed", "<?php echo $err; ?>", "error");
-                },
+            setTimeout(function () {
+                swal("Failed", "<?php echo $err; ?>", "error");
+            },
                 100);
         </script>
 
@@ -47,9 +47,9 @@
     <?php if (isset($info)) { ?>
         <!--This code for injecting info alert-->
         <script>
-            setTimeout(function() {
-                    swal("Success", "<?php echo $info; ?>", "info");
-                },
+            setTimeout(function () {
+                swal("Success", "<?php echo $info; ?>", "info");
+            },
                 100);
         </script>
 
@@ -61,7 +61,7 @@
                 type: "POST",
                 url: "customer_ajax.php",
                 data: 'custName=' + val,
-                success: function(data) {
+                success: function (data) {
                     //alert(data);
                     $('#customerID').val(data);
                 }
@@ -69,4 +69,6 @@
 
         }
     </script>
+    <!-- JsBarcode CDN for QR code generation -->
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 </head>

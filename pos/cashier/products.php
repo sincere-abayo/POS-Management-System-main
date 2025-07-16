@@ -16,6 +16,17 @@ if (isset($_GET['delete'])) {
         $err = "Try Again Later";
     }
 }
+// Add PHP logic at the top to handle status toggle
+if (isset($_POST['toggleStatus'])) {
+    $toggle_id = $_POST['toggle_id'];
+    $new_status = $_POST['new_status'];
+    $stmt = $mysqli->prepare("UPDATE rpos_products SET status=? WHERE prod_id=?");
+    $stmt->bind_param('ss', $new_status, $toggle_id);
+    $stmt->execute();
+    $stmt->close();
+    header("Location: products.php");
+    exit();
+}
 require_once('partials/_head.php');
 ?>
 
@@ -31,8 +42,9 @@ require_once('partials/_head.php');
         require_once('partials/_topnav.php');
         ?>
         <!-- Header -->
-        <div style="background-image: url(../admin/assets/img/theme/restro00.jpg); background-size: cover;" class="header  pb-8 pt-5 pt-md-8">
-        <span class="mask bg-gradient-dark opacity-8"></span>
+        <div style="background-image: url(../admin/assets/img/theme/restro00.jpg); background-size: cover;"
+            class="header  pb-8 pt-5 pt-md-8">
+            <span class="mask bg-gradient-dark opacity-8"></span>
             <div class="container-fluid">
                 <div class="header-body">
                 </div>
@@ -46,6 +58,10 @@ require_once('partials/_head.php');
                     <div class="card shadow">
                         <div class="card-header border-0">
                             Food Items
+                            <button class="btn btn-outline-info float-right" data-toggle="modal"
+                                data-target="#qrScanModal">
+                                <i class="fas fa-qrcode"></i> Scan QR
+                            </button>
                             <!-- <a href="add_product.php" class="btn btn-outline-success">
                                 <i class="fas fa-utensils"></i>
                                 Add New Product
@@ -69,17 +85,24 @@ require_once('partials/_head.php');
                                     $stmt->execute();
                                     $res = $stmt->get_result();
                                     while ($prod = $res->fetch_object()) {
-                                    ?>
+                                        ?>
                                         <tr>
                                             <td>
                                                 <?php
                                                 if ($prod->prod_img) {
-                                                    echo "<img src='../admin/assets/img/products/$prod->prod_img' height='60' width='60 class='img-thumbnail'>";
+                                                    echo "<img src='../admin/assets/img/products/$prod->prod_img' height='60' width='60' class='img-thumbnail'>";
                                                 } else {
-                                                    echo "<img src='../admin/assets/img/products/default.jpg' height='60' width='60 class='img-thumbnail'>";
+                                                    echo "<img src='../admin/assets/img/products/default.jpg' height='60' width='60' class='img-thumbnail'>";
                                                 }
-
                                                 ?>
+                                                <br>
+                                                <?php if ($prod->qr_code) { ?>
+                                                    <img src="data:image/svg+xml;base64,<?php echo $prod->qr_code; ?>"
+                                                        width="60" height="60" />
+                                                    <a href="data:image/svg+xml;base64,<?php echo $prod->qr_code; ?>"
+                                                        download="qr_<?php echo $prod->prod_code; ?>.svg"
+                                                        class="btn btn-sm btn-info mt-1">Download QR</a>
+                                                <?php } ?>
                                             </td>
                                             <td><?php echo $prod->prod_code; ?></td>
                                             <td><?php echo $prod->prod_name; ?></td>
@@ -110,6 +133,25 @@ require_once('partials/_head.php');
     <?php
     require_once('partials/_scripts.php');
     ?>
+
+    <!-- QR Scan Modal -->
+    <div class="modal fade" id="qrScanModal" tabindex="-1" role="dialog" aria-labelledby="qrScanModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qrScanModalLabel">Scan Product QR Code</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body text-center">
+                    <video id="qr-video" width="320" height="240" autoplay></video>
+                    <div id="qr-result" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
