@@ -71,10 +71,13 @@ require_once('partials/_head.php');
                             <table class="table align-items-center table-flush">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th scope="col">Image</th>
+                                        <th scope="col">Image / QR</th>
                                         <th scope="col">Product Code</th>
                                         <th scope="col">Name</th>
+                                        <th scope="col">Category</th>
                                         <th scope="col">Price</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Stock</th>
                                         <th scope="col">Action</th>
                                     </tr>
                                 </thead>
@@ -96,17 +99,41 @@ require_once('partials/_head.php');
                                                 }
                                                 ?>
                                                 <br>
-                                                <?php if ($prod->qr_code) { ?>
-                                                    <img src="data:image/svg+xml;base64,<?php echo $prod->qr_code; ?>"
-                                                        width="60" height="60" />
-                                                    <a href="data:image/svg+xml;base64,<?php echo $prod->qr_code; ?>"
-                                                        download="qr_<?php echo $prod->prod_code; ?>.svg"
-                                                        class="btn btn-sm btn-info mt-1">Download QR</a>
-                                                <?php } ?>
+                                                <div id="qr_<?php echo $prod->prod_id; ?>" class="qr-div"></div>
+                                                <button type="button" class="btn btn-sm btn-info mt-1"
+                                                    onclick="downloadQR('<?php echo $prod->prod_id; ?>')">Download
+                                                    QR</button>
                                             </td>
                                             <td><?php echo $prod->prod_code; ?></td>
                                             <td><?php echo $prod->prod_name; ?></td>
+                                            <td><?php echo $prod->category; ?></td>
                                             <td>$ <?php echo $prod->prod_price; ?></td>
+                                            <td>
+                                                <span
+                                                    class="badge badge-<?php echo $prod->status == 'active' ? 'success' : 'danger'; ?> p-2"
+                                                    style="font-size: 1em;">
+                                                    <?php echo ucfirst($prod->status); ?>
+                                                </span>
+                                                <form method="POST" style="display:inline;">
+                                                    <input type="hidden" name="toggle_id"
+                                                        value="<?php echo $prod->prod_id; ?>">
+                                                    <input type="hidden" name="new_status"
+                                                        value="<?php echo $prod->status == 'active' ? 'inactive' : 'active'; ?>">
+                                                    <button type="submit" name="toggleStatus"
+                                                        class="btn btn-sm btn-outline-<?php echo $prod->status == 'active' ? 'danger' : 'success'; ?> ml-2">
+                                                        <?php echo $prod->status == 'active' ? 'Deactivate' : 'Activate'; ?>
+                                                    </button>
+                                                </form>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-info p-2" style="font-size: 1em;">
+                                                    <?php echo $prod->quantity; ?> in stock
+                                                </span>
+                                                <?php if ($prod->quantity <= $prod->min_stocks) { ?>
+                                                    <span class="badge badge-warning p-2 ml-1" style="font-size: 1em;">Low
+                                                        Stock!</span>
+                                                <?php } ?>
+                                            </td>
                                             <td>
                                                 <a href="update_product.php?update=<?php echo $prod->prod_id; ?>">
                                                     <button class="btn btn-sm btn-primary">
@@ -152,6 +179,33 @@ require_once('partials/_head.php');
             </div>
         </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.qr-div').forEach(function (div) {
+                var prodId = div.id.replace('qr_', '');
+                var prodCode = div.closest('tr').querySelector('td:nth-child(2)').textContent.trim();
+                new QRCode(div, {
+                    text: prodCode,
+                    width: 60,
+                    height: 60,
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            });
+        });
+        function downloadQR(prodId) {
+            var qrDiv = document.getElementById('qr_' + prodId);
+            var img = qrDiv.querySelector('img');
+            if (img) {
+                var a = document.createElement('a');
+                a.href = img.src;
+                a.download = 'qr_' + prodId + '.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        }
+    </script>
 </body>
 
 </html>
