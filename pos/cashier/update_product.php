@@ -120,7 +120,33 @@ require_once('partials/_head.php');
                   <div class="form-row">
                     <div class="col-md-6">
                       <label>Category</label>
-                      <input type="text" name="category" class="form-control" value="<?php echo $prod->category; ?>">
+                      <?php $cat = $prod->category; ?>
+                      <select name="category" class="form-control">
+                        <option value="">Select Category</option>
+                        <option value="Fruits" <?php if ($cat == "Fruits")
+                          echo 'selected'; ?>>Fruits</option>
+                        <option value="Vegetables" <?php if ($cat == "Vegetables")
+                          echo 'selected'; ?>>Vegetables</option>
+                        <option value="Dairy" <?php if ($cat == "Dairy")
+                          echo 'selected'; ?>>Dairy</option>
+                        <option value="Meat" <?php if ($cat == "Meat")
+                          echo 'selected'; ?>>Meat</option>
+                        <option value="Bakery" <?php if ($cat == "Bakery")
+                          echo 'selected'; ?>>Bakery</option>
+                        <option value="Beverages" <?php if ($cat == "Beverages")
+                          echo 'selected'; ?>>Beverages</option>
+                        <option value="Snacks" <?php if ($cat == "Snacks")
+                          echo 'selected'; ?>>Snacks</option>
+                        <option value="Frozen" <?php if ($cat == "Frozen")
+                          echo 'selected'; ?>>Frozen</option>
+                        <option value="Household" <?php if ($cat == "Household")
+                          echo 'selected'; ?>>Household</option>
+                        <option value="Personal Care" <?php if ($cat == "Personal Care")
+                          echo 'selected'; ?>>Personal Care
+                        </option>
+                        <option value="Other" <?php if ($cat == "Other")
+                          echo 'selected'; ?>>Other</option>
+                      </select>
                     </div>
                     <div class="col-md-6">
                       <label>Status</label>

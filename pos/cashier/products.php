@@ -102,8 +102,31 @@ require_once('partials/_head.php');
                                     <option value="inactive" <?php if (isset($_GET['status']) && $_GET['status'] === 'inactive')
                                         echo 'selected'; ?>>Inactive</option>
                                 </select>
-                                <input type="text" name="category" class="form-control mr-2" placeholder="Category"
-                                    value="<?php echo isset($_GET['category']) ? htmlspecialchars($_GET['category']) : ''; ?>">
+                                <select name="category" class="form-control mr-2">
+                                    <option value="">All Categories</option>
+                                    <option value="Fruits" <?php if (isset($_GET['category']) && $_GET['category'] == "Fruits")
+                                        echo 'selected'; ?>>Fruits</option>
+                                    <option value="Vegetables" <?php if (isset($_GET['category']) && $_GET['category'] == "Vegetables")
+                                        echo 'selected'; ?>>Vegetables</option>
+                                    <option value="Dairy" <?php if (isset($_GET['category']) && $_GET['category'] == "Dairy")
+                                        echo 'selected'; ?>>Dairy</option>
+                                    <option value="Meat" <?php if (isset($_GET['category']) && $_GET['category'] == "Meat")
+                                        echo 'selected'; ?>>Meat</option>
+                                    <option value="Bakery" <?php if (isset($_GET['category']) && $_GET['category'] == "Bakery")
+                                        echo 'selected'; ?>>Bakery</option>
+                                    <option value="Beverages" <?php if (isset($_GET['category']) && $_GET['category'] == "Beverages")
+                                        echo 'selected'; ?>>Beverages</option>
+                                    <option value="Snacks" <?php if (isset($_GET['category']) && $_GET['category'] == "Snacks")
+                                        echo 'selected'; ?>>Snacks</option>
+                                    <option value="Frozen" <?php if (isset($_GET['category']) && $_GET['category'] == "Frozen")
+                                        echo 'selected'; ?>>Frozen</option>
+                                    <option value="Household" <?php if (isset($_GET['category']) && $_GET['category'] == "Household")
+                                        echo 'selected'; ?>>Household</option>
+                                    <option value="Personal Care" <?php if (isset($_GET['category']) && $_GET['category'] == "Personal Care")
+                                        echo 'selected'; ?>>Personal Care</option>
+                                    <option value="Other" <?php if (isset($_GET['category']) && $_GET['category'] == "Other")
+                                        echo 'selected'; ?>>Other</option>
+                                </select>
                                 <button type="submit" class="btn btn-primary">Filter</button>
                             </form>
                             <table class="table align-items-center table-flush">

@@ -115,7 +115,20 @@ require_once('partials/_head.php');
                 <div class="form-row">
                   <div class="col-md-6">
                     <label>Category</label>
-                    <input type="text" name="category" class="form-control">
+                    <select name="category" class="form-control">
+                      <option value="">Select Category</option>
+                      <option value="Fruits">Fruits</option>
+                      <option value="Vegetables">Vegetables</option>
+                      <option value="Dairy">Dairy</option>
+                      <option value="Meat">Meat</option>
+                      <option value="Bakery">Bakery</option>
+                      <option value="Beverages">Beverages</option>
+                      <option value="Snacks">Snacks</option>
+                      <option value="Frozen">Frozen</option>
+                      <option value="Household">Household</option>
+                      <option value="Personal Care">Personal Care</option>
+                      <option value="Other">Other</option>
+                    </select>
                   </div>
                   <div class="col-md-6">
                     <label>Status</label>
