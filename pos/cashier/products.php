@@ -80,7 +80,7 @@ require_once('partials/_head.php');
                 <div class="col">
                     <div class="card shadow">
                         <div class="card-header border-0">
-                            Food Items
+                            Stock Items
                             <button class="btn btn-outline-info float-right" data-toggle="modal"
                                 data-target="#qrScanModal">
                                 <i class="fas fa-qrcode"></i> Scan QR
@@ -161,62 +161,62 @@ require_once('partials/_head.php');
                                     if ($res && $res->num_rows > 0) {
                                         while ($prod = $res->fetch_object()) {
                                             ?>
-                                            <tr>
-                                                <td>
-                                                    <?php
+                                    <tr>
+                                        <td>
+                                            <?php
                                                     if ($prod->prod_img) {
                                                         echo "<img src='../admin/assets/img/products/$prod->prod_img' height='60' width='60' class='img-thumbnail'>";
                                                     } else {
                                                         echo "<img src='../admin/assets/img/products/default.jpg' height='60' width='60' class='img-thumbnail'>";
                                                     }
                                                     ?>
-                                                    <br>
-                                                    <div id="qr_<?php echo $prod->prod_id; ?>" class="qr-div"></div>
-                                                    <button type="button" class="btn btn-sm btn-info mt-1"
-                                                        onclick="downloadQR('<?php echo $prod->prod_id; ?>')">Download
-                                                        QR</button>
-                                                </td>
-                                                <td><?php echo $prod->prod_code; ?></td>
-                                                <td><?php echo $prod->prod_name; ?></td>
-                                                <td><?php echo $prod->category ? htmlspecialchars($prod->category) : 'Uncategorized'; ?>
-                                                </td>
-                                                <td>$ <?php echo $prod->prod_price; ?></td>
-                                                <td>
-                                                    <span
-                                                        class="badge badge-<?php echo $prod->status == 'active' ? 'success' : 'danger'; ?> p-2"
-                                                        style="font-size: 1em;">
-                                                        <?php echo ucfirst($prod->status); ?>
-                                                    </span>
-                                                    <form method="POST" style="display:inline;">
-                                                        <input type="hidden" name="toggle_id"
-                                                            value="<?php echo $prod->prod_id; ?>">
-                                                        <input type="hidden" name="new_status"
-                                                            value="<?php echo $prod->status == 'active' ? 'inactive' : 'active'; ?>">
-                                                        <button type="submit" name="toggleStatus"
-                                                            class="btn btn-sm btn-outline-<?php echo $prod->status == 'active' ? 'danger' : 'success'; ?> ml-2">
-                                                            <?php echo $prod->status == 'active' ? 'Deactivate' : 'Activate'; ?>
-                                                        </button>
-                                                    </form>
-                                                </td>
-                                                <td>
-                                                    <span class="badge badge-info p-2" style="font-size: 1em;">
-                                                        <?php echo $prod->quantity; ?> in stock
-                                                    </span>
-                                                    <?php if ($prod->quantity <= $prod->min_stocks) { ?>
-                                                        <span class="badge badge-warning p-2 ml-1" style="font-size: 1em;">Low
-                                                            Stock!</span>
-                                                    <?php } ?>
-                                                </td>
-                                                <td>
-                                                    <a href="update_product.php?update=<?php echo $prod->prod_id; ?>">
-                                                        <button class="btn btn-sm btn-primary">
-                                                            <i class="fas fa-edit"></i>
-                                                            Update
-                                                        </button>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        <?php }
+                                            <br>
+                                            <div id="qr_<?php echo $prod->prod_id; ?>" class="qr-div"></div>
+                                            <button type="button" class="btn btn-sm btn-info mt-1"
+                                                onclick="downloadQR('<?php echo $prod->prod_id; ?>')">Download
+                                                QR</button>
+                                        </td>
+                                        <td><?php echo $prod->prod_code; ?></td>
+                                        <td><?php echo $prod->prod_name; ?></td>
+                                        <td><?php echo $prod->category ? htmlspecialchars($prod->category) : 'Uncategorized'; ?>
+                                        </td>
+                                        <td>$ <?php echo $prod->prod_price; ?></td>
+                                        <td>
+                                            <span
+                                                class="badge badge-<?php echo $prod->status == 'active' ? 'success' : 'danger'; ?> p-2"
+                                                style="font-size: 1em;">
+                                                <?php echo ucfirst($prod->status); ?>
+                                            </span>
+                                            <form method="POST" style="display:inline;">
+                                                <input type="hidden" name="toggle_id"
+                                                    value="<?php echo $prod->prod_id; ?>">
+                                                <input type="hidden" name="new_status"
+                                                    value="<?php echo $prod->status == 'active' ? 'inactive' : 'active'; ?>">
+                                                <button type="submit" name="toggleStatus"
+                                                    class="btn btn-sm btn-outline-<?php echo $prod->status == 'active' ? 'danger' : 'success'; ?> ml-2">
+                                                    <?php echo $prod->status == 'active' ? 'Deactivate' : 'Activate'; ?>
+                                                </button>
+                                            </form>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-info p-2" style="font-size: 1em;">
+                                                <?php echo $prod->quantity; ?> in stock
+                                            </span>
+                                            <?php if ($prod->quantity <= $prod->min_stocks) { ?>
+                                            <span class="badge badge-warning p-2 ml-1" style="font-size: 1em;">Low
+                                                Stock!</span>
+                                            <?php } ?>
+                                        </td>
+                                        <td>
+                                            <a href="update_product.php?update=<?php echo $prod->prod_id; ?>">
+                                                <button class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                    Update
+                                                </button>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <?php }
                                     } else {
                                         echo '<tr><td colspan="8" class="text-center">No products found.</td></tr>';
                                     }
@@ -250,40 +250,156 @@ require_once('partials/_head.php');
                     </button>
                 </div>
                 <div class="modal-body text-center">
-                    <video id="qr-video" width="320" height="240" autoplay></video>
+                    <video id="qr-video" width="320" height="240" autoplay muted playsinline
+                        style="border:1px solid #ccc;"></video>
+                    <canvas id="qr-canvas" width="320" height="240" style="display:none;"></canvas>
                     <div id="qr-result" class="mt-2"></div>
+                    <div id="qr-error" class="text-danger mt-2"></div>
                 </div>
             </div>
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.qr-div').forEach(function (div) {
-                var prodId = div.id.replace('qr_', '');
-                var prodCode = div.closest('tr').querySelector('td:nth-child(2)').textContent.trim();
-                new QRCode(div, {
-                    text: prodCode,
-                    width: 60,
-                    height: 60,
-                    correctLevel: QRCode.CorrectLevel.H
-                });
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.qr-div').forEach(function(div) {
+            var prodId = div.id.replace('qr_', '');
+            var prodCode = div.closest('tr').querySelector('td:nth-child(2)').textContent.trim();
+            new QRCode(div, {
+                text: prodCode,
+                width: 60,
+                height: 60,
+                correctLevel: QRCode.CorrectLevel.H
             });
         });
+    });
 
-        function downloadQR(prodId) {
-            var qrDiv = document.getElementById('qr_' + prodId);
-            var img = qrDiv.querySelector('img');
-            if (img) {
-                var a = document.createElement('a');
-                a.href = img.src;
-                a.download = 'qr_' + prodId + '.png';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            }
+    function downloadQR(prodId) {
+        var qrDiv = document.getElementById('qr_' + prodId);
+        var img = qrDiv.querySelector('img');
+        if (img) {
+            var a = document.createElement('a');
+            a.href = img.src;
+            a.download = 'qr_' + prodId + '.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
+    }
+
+    let video = null;
+    let canvas = null;
+    let ctx = null;
+    let scanning = false;
+    let scanInterval = null;
+
+    function startQRScanner() {
+        video = document.getElementById('qr-video');
+        canvas = document.getElementById('qr-canvas');
+        ctx = canvas.getContext('2d', {
+            willReadFrequently: true
+        });
+        document.getElementById('qr-result').innerHTML = '';
+        document.getElementById('qr-error').innerHTML = '';
+        scanning = true;
+        let videoStarted = false;
+        // Check for getUserMedia support with detailed debug
+        if (!navigator.mediaDevices) {
+            document.getElementById('qr-error').innerText =
+                'navigator.mediaDevices is not available. This browser or context does not support camera access.\n' +
+                'Try updating your browser, using a different browser, or checking if you are in an in-app browser.';
+            return;
+        }
+        if (!navigator.mediaDevices.getUserMedia) {
+            document.getElementById('qr-error').innerText =
+                'navigator.mediaDevices.getUserMedia is not available. This browser does not support camera access.\n' +
+                'Try updating your browser, using a different browser, or checking if you are in an in-app browser.';
+            return;
+        }
+        // Timeout if video does not start
+        let videoTimeout = setTimeout(function() {
+            if (!videoStarted) {
+                document.getElementById('qr-error').innerText =
+                    'Camera did not start. Please check permissions, try a different browser, or reload the page.';
+            }
+        }, 5000);
+        // Try environment camera first, fallback to default if it fails
+        function tryDefaultCamera() {
+            navigator.mediaDevices.getUserMedia({
+                    video: true
+                })
+                .then(function(stream) {
+                    video.srcObject = stream;
+                    video.setAttribute('playsinline', true);
+                    video.play();
+                    scanInterval = setInterval(scanFrame, 300);
+                    video.onplaying = function() {
+                        videoStarted = true;
+                        clearTimeout(videoTimeout);
+                    };
+                })
+                .catch(function(err) {
+                    document.getElementById('qr-error').innerText = 'Camera error (default): ' + err.message +
+                        '\nMake sure you are using HTTPS and have granted camera permissions.';
+                });
+        }
+        navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: 'environment'
+                }
+            })
+            .then(function(stream) {
+                video.srcObject = stream;
+                video.setAttribute('playsinline', true);
+                video.play();
+                scanInterval = setInterval(scanFrame, 300);
+                video.onplaying = function() {
+                    videoStarted = true;
+                    clearTimeout(videoTimeout);
+                };
+            })
+            .catch(function(err) {
+                document.getElementById('qr-error').innerText = 'Camera error (environment): ' + err.message +
+                    '\nTrying default camera...';
+                tryDefaultCamera();
+            });
+    }
+
+    function stopQRScanner() {
+        scanning = false;
+        clearInterval(scanInterval);
+        if (video && video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+        }
+    }
+
+    function scanFrame() {
+        if (!scanning) return;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let code = jsQR(imageData.data, imageData.width, imageData.height);
+        if (code) {
+            stopQRScanner();
+            let prodCode = code.data;
+            // Redirect directly to make_order.php with the scanned product code
+            window.location.href = 'make_order.php?prod_code=' + encodeURIComponent(prodCode);
+            return;
+        }
+    }
+
+    $('#qrScanModal').on('shown.bs.modal', function() {
+        startQRScanner();
+    });
+    $('#qrScanModal').on('hidden.bs.modal', function() {
+        stopQRScanner();
+        document.getElementById('qr-result').innerHTML = '';
+        document.getElementById('qr-error').innerHTML = '';
+    });
     </script>
+    <!-- For local HTTPS testing, see:
+    // ngrok: https://ngrok.com/
+    // localhost.run: https://localhost.run/ -->
 </body>
 
 </html>
