@@ -46,8 +46,9 @@ require_once('partials/_head.php');
                                         <th class="text-success" scope="col">#</th>
                                         <th scope="col">Payment Method</th>
                                         <th class="text-success" scope="col">Products</th>
-                                        <th scope="col">Amount Paid</th>
+                                        <th scope="col">Payment Status</th>
                                         <th class="text-success" scope="col">Date Paid</th>
+                                        <th scope="col">Order ID</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -65,7 +66,7 @@ require_once('partials/_head.php');
                                         $where = 'WHERE DATE(p.created_at) <= ?';
                                         $params[] = $_GET['to'];
                                     }
-                                    $ret = "SELECT p.*, o.status as order_status FROM rpos_payments p LEFT JOIN rpos_orders o ON p.order_id = o.order_id $where ORDER BY p.created_at DESC";
+                                    $ret = "SELECT p.*, o.items FROM rpos_payments p LEFT JOIN rpos_orders o ON p.order_id = o.order_id $where ORDER BY p.created_at DESC";
                                     $stmt = $mysqli->prepare($ret);
                                     if ($params) {
                                         $types = str_repeat('s', count($params));
@@ -76,24 +77,36 @@ require_once('partials/_head.php');
                                     $i = 1;
                                     while ($payment = $res->fetch_object()) {
                                         ?>
-                                        <tr>
-                                            <th class="text-success" scope="row"><?php echo $i++; ?></th>
-                                            <td><?php echo ucfirst(htmlspecialchars($payment->method)); ?></td>
-                                            <td>
-                                                <?php if ($payment->order_id) { ?>
-                                                    <a href="print_receipt.php?order_id=<?php echo $payment->order_id; ?>"
-                                                        target="_blank">
-                                                        <?php echo htmlspecialchars($payment->order_id); ?>
-                                                    </a>
-                                                <?php } else {
+                                    <tr>
+                                        <th class="text-success" scope="row"><?php echo $i++; ?></th>
+                                        <td><?php echo ucfirst(htmlspecialchars($payment->method)); ?></td>
+                                        <td>
+                                            <?php
+                                                $items = isset($payment->items) ? json_decode($payment->items, true) : null;
+                                                if (is_array($items) && count($items) > 0) {
+                                                    $names = array_column($items, 'prod_name');
+                                                    echo htmlspecialchars($names[0]);
+                                                    if (count($names) > 1) {
+                                                        echo ' +' . (count($names) - 1) . ' more';
+                                                    }
+                                                } else {
+                                                    echo '-';
+                                                }
+                                                ?>
+                                        </td>
+                                        <td>RWF <?php echo number_format($payment->amount, 2); ?></td>
+                                        <td><?php echo date('d/M/Y g:i', strtotime($payment->created_at)); ?></td>
+                                        <td>
+                                            <?php if ($payment->order_id) { ?>
+                                            <a href="print_receipt.php?order_id=<?php echo $payment->order_id; ?>"
+                                                target="_blank">
+                                                <?php echo htmlspecialchars($payment->order_id); ?>
+                                            </a>
+                                            <?php } else {
                                                     echo '-';
                                                 } ?>
-                                            </td>
-                                            <td><?php echo ucfirst($payment->order_status); ?></td>
-                                            <td>RWF <?php echo htmlspecialchars($payment->amount); ?></td>
-                                            <td><?php echo ucfirst($payment->status); ?></td>
-                                            <td><?php echo date('d/M/Y g:i', strtotime($payment->created_at)); ?></td>
-                                        </tr>
+                                        </td>
+                                    </tr>
                                     <?php } ?>
                                 </tbody>
                             </table>
@@ -105,16 +118,20 @@ require_once('partials/_head.php');
         </div>
     </div>
     <style>
-        @media print {
+    @media print {
 
-            .btn,
-            form,
-            .main-content .card-header {
-                display: none !important;
-            }
+        .btn,
+        form,
+        .main-content .card-header {
+            display: none !important;
         }
+    }
     </style>
-    <script>function printReport() { window.print(); }</script>
+    <script>
+    function printReport() {
+        window.print();
+    }
+    </script>
     <?php require_once('partials/_scripts.php'); ?>
 </body>
 

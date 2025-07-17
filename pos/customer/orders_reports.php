@@ -39,14 +39,12 @@ require_once('partials/_head.php');
                             <table class="table align-items-center table-flush">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th class="text-success" scope="col">#</th>
                                         <th scope="col">Customer</th>
-                                        <th class="text-success" scope="col">Product</th>
-                                        <th scope="col">Unit Price</th>
-                                        <th class="text-success" scope="col">#</th>
-                                        <th scope="col">Total Price</th>
+                                        <th class="text-success" scope="col">Products</th>
+                                        <th scope="col">Total</th>
                                         <th scope="col">Payment Status</th>
-                                        <th scop="col">Order Status</th>
+                                        <th scope="col">Order Status</th>
+                                        <th scope="col">Order Type</th>
                                         <th class="text-success" scope="col">Date</th>
                                     </tr>
                                 </thead>
@@ -60,50 +58,57 @@ require_once('partials/_head.php');
                                     $res = $stmt->get_result();
                                     while ($order = $res->fetch_object()) {
                                         $items = json_decode($order->items, true);
-                                        if (is_array($items)) {
-                                            foreach ($items as $item) {
-                                                $qty = isset($item['prod_qty']) ? $item['prod_qty'] : 1;
-                                                $total = $item['prod_price'] * $qty;
-                                                ?>
+                                        $total = 0;
+                                        $product_names = [];
+                                        foreach ($items as $item) {
+                                            $qty = isset($item['prod_qty']) ? $item['prod_qty'] : 1;
+                                            $price = isset($item['prod_price']) ? $item['prod_price'] : 0;
+                                            $total += $price * $qty;
+                                            $product_names[] = $item['prod_name'];
+                                        }
+                                        // Fetch payment status
+                                        $pay_stmt = $mysqli->prepare("SELECT status FROM rpos_payments WHERE order_id = ? ORDER BY created_at DESC LIMIT 1");
+                                        $pay_stmt->bind_param('i', $order->order_id);
+                                        $pay_stmt->execute();
+                                        $pay_stmt->bind_result($pay_status);
+                                        $has_payment = $pay_stmt->fetch();
+                                        $pay_stmt->close();
+                                        ?>
                                     <tr>
-                                        <th class="text-success" scope="row"><?php echo $i++; ?></th>
                                         <td><?php echo htmlspecialchars($order->customer_name); ?></td>
-                                        <td class="text-success"><?php echo htmlspecialchars($item['prod_name']); ?>
+                                        <td>
+                                            <?php
+                                                echo htmlspecialchars($product_names[0]);
+                                                if (count($product_names) > 1) {
+                                                    echo ' +' . (count($product_names) - 1) . ' more';
+                                                }
+                                                ?>
                                         </td>
-                                        <td>RWF <?php echo number_format($item['prod_price'], 2); ?></td>
-                                        <td class="text-success"><?php echo $qty; ?></td>
                                         <td>RWF <?php echo number_format($total, 2); ?></td>
                                         <td>
                                             <?php
-                                                        // Fetch payment status for this order
-                                                        $pay_stmt = $mysqli->prepare("SELECT status FROM rpos_payments WHERE order_id = ? ORDER BY created_at DESC LIMIT 1");
-                                                        $pay_stmt->bind_param('i', $order->order_id);
-                                                        $pay_stmt->execute();
-                                                        $pay_stmt->bind_result($pay_status);
-                                                        $has_payment = $pay_stmt->fetch();
-                                                        $pay_stmt->close();
-                                                        if ($has_payment && $pay_status == 'paid') {
-                                                            echo "<span class='badge badge-success'>Paid</span>";
-                                                        } else {
-                                                            echo "<span class='badge badge-danger'>Unpaid</span> ";
-                                                            echo "<a href='pay_order.php?order_id=" . urlencode($order->order_id) . "' class='btn btn-sm btn-primary ml-2'>Pay</a>";
-                                                        }
-                                                        ?>
+                                                if ($has_payment && $pay_status == 'paid') {
+                                                    echo "<span class='badge badge-success'>Paid</span>";
+                                                } else {
+                                                    echo "<span class='badge badge-danger'>Unpaid</span> ";
+                                                    echo "<a href='pay_order.php?order_id=" . urlencode($order->order_id) . "' class='btn btn-sm btn-primary ml-2'>Pay</a>";
+                                                }
+                                                ?>
                                         </td>
-                                        <td><?php
-                                                    echo ($order->status == 'pending') ? "<span class='badge badge-danger'>Pending</span>" : "<span class='badge badge-success'>" . htmlspecialchars($order->status) . "</span>";
-                                                    if ($order->order_type == 'online') {
-                                                        echo ' <button type="button" class="btn btn-sm btn-info ml-2 track-btn" data-order-id="' . $order->order_id . '" data-status="' . htmlspecialchars($order->status) . '">Track</button>';
-                                                    }
-                                                    ?></td>
+                                        <td>
+                                            <?php
+                                                echo ($order->status == 'pending') ? "<span class='badge badge-danger'>Pending</span>" : "<span class='badge badge-success'>" . htmlspecialchars($order->status) . "</span>";
+                                                if ($order->order_type == 'online') {
+                                                    echo ' <button type="button" class="btn btn-sm btn-info ml-2 track-btn" data-order-id="' . $order->order_id . '" data-status="' . htmlspecialchars($order->status) . '">Track</button>';
+                                                }
+                                                ?>
+                                        </td>
+                                        <td><?php echo ucfirst(str_replace('_', ' ', $order->order_type)); ?></td>
                                         <td class="text-success">
                                             <?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?>
                                         </td>
                                     </tr>
-                                    <?php
-                                            }
-                                        }
-                                    } ?>
+                                    <?php } ?>
                                 </tbody>
                             </table>
                         </div>

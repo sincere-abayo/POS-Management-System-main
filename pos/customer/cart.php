@@ -16,9 +16,13 @@ require_once('partials/_head.php');
                     <div class="card shadow">
                         <div class="card-header d-flex justify-content-between align-items-center">
                             <h3>Your Cart</h3>
-                            <a href="orders.php" class="btn btn-outline-primary"><i class="fas fa-arrow-left"></i>
-                                Continue Shopping</a>
+                            <!-- <a href="orders.php" class="btn btn-outline-primary"
+                                onclick="window.location.href='orders.php'; return false;">
+                                <i class="fas fa-arrow-left"></i> Continue Shopping
+                            </a> -->
+
                         </div>
+
                         <div class="card-body">
                             <?php
                             if (!isset($_SESSION['cart']) || count($_SESSION['cart']) === 0) {
@@ -50,23 +54,23 @@ require_once('partials/_head.php');
                                     }
                                 }
                                 ?>
-                                <?php if (!empty($error)) { ?>
-                                    <div class="alert alert-danger text-center"><?php echo $error; ?></div>
-                                <?php } ?>
-                                <form method="post" id="cartForm">
-                                    <table class="table table-bordered align-items-center">
-                                        <thead class="thead-light">
-                                            <tr>
-                                                <th>Product</th>
-                                                <th>Code</th>
-                                                <th>Unit Price</th>
-                                                <th>Quantity</th>
-                                                <th>Subtotal</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php
+                            <?php if (!empty($error)) { ?>
+                            <div class="alert alert-danger text-center"><?php echo $error; ?></div>
+                            <?php } ?>
+                            <form method="post" id="cartForm">
+                                <table class="table table-bordered align-items-center">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Product</th>
+                                            <th>Code</th>
+                                            <th>Unit Price</th>
+                                            <th>Quantity</th>
+                                            <th>Subtotal</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
                                             $total = 0;
                                             foreach ($_SESSION['cart'] as $idx => $item) {
                                                 $prod_id = $item['prod_id'];
@@ -80,58 +84,61 @@ require_once('partials/_head.php');
                                                 $total += $subtotal;
                                                 $out_of_stock = ($available_stock <= 0);
                                                 ?>
-                                                <tr>
-                                                    <td>
-                                                        <img src="../admin/assets/img/products/<?php echo htmlspecialchars($item['prod_img']); ?>"
-                                                            style="height:40px;width:40px;object-fit:cover;"
-                                                            class="mr-2 rounded">
-                                                        <?php echo htmlspecialchars($item['prod_name']); ?>
-                                                        <?php if ($out_of_stock) { ?>
-                                                            <span class="badge badge-danger ml-2">Out of Stock</span>
-                                                        <?php } ?>
-                                                    </td>
-                                                    <td><?php echo htmlspecialchars($item['prod_code']); ?></td>
-                                                    <td>RWF <?php echo htmlspecialchars($item['prod_price']); ?></td>
-                                                    <td><input type="number" name="quantities[<?php echo $idx; ?>]"
-                                                            value="<?php echo $item['quantity']; ?>" min="1"
-                                                            max="<?php echo $available_stock; ?>" class="form-control cart-qty-input"
-                                                            style="width:80px;" <?php if ($out_of_stock)
-                                                                echo 'disabled'; ?> data-max="<?php echo $available_stock; ?>">
-                                                    </td>
-                                                    <td>RWF <?php echo htmlspecialchars($subtotal); ?></td>
-                                                    <td>
-                                                        <button type="submit" name="remove_item" value="<?php echo $idx; ?>"
-                                                            class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
-                                                    </td>
-                                                </tr>
-                                            <?php } ?>
-                                        </tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <th colspan="4" class="text-right">Total:</th>
-                                                <th colspan="2">RWF <?php echo htmlspecialchars($total); ?></th>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                    <div class="d-flex justify-content-between">
-                                        <button type="submit" name="update_cart" class="btn btn-info"><i
-                                                class="fas fa-sync"></i> Update Cart</button>
-                                        <a href="checkout.php" class="btn btn-success"><i class="fas fa-credit-card"></i>
-                                            Proceed to Checkout</a>
-                                    </div>
-                                </form>
-                                <script>
-                                // Prevent entering quantity greater than available stock
-                                document.querySelectorAll('.cart-qty-input').forEach(function(input) {
-                                    input.addEventListener('input', function() {
-                                        var max = parseInt(this.getAttribute('data-max'));
-                                        if (parseInt(this.value) > max) {
-                                            this.value = max;
-                                            alert('You cannot set a quantity greater than available stock.');
-                                        }
-                                    });
+                                        <tr>
+                                            <td>
+                                                <img src="../admin/assets/img/products/<?php echo htmlspecialchars($item['prod_img']); ?>"
+                                                    style="height:40px;width:40px;object-fit:cover;"
+                                                    class="mr-2 rounded">
+                                                <?php echo htmlspecialchars($item['prod_name']); ?>
+                                                <?php if ($out_of_stock) { ?>
+                                                <span class="badge badge-danger ml-2">Out of Stock</span>
+                                                <?php } ?>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($item['prod_code']); ?></td>
+                                            <td>RWF <?php echo htmlspecialchars($item['prod_price']); ?></td>
+                                            <td><input type="number" name="quantities[<?php echo $idx; ?>]"
+                                                    value="<?php echo $item['quantity']; ?>" min="1"
+                                                    max="<?php echo $available_stock; ?>"
+                                                    class="form-control cart-qty-input" style="width:80px;" <?php if ($out_of_stock)
+                                                                echo 'disabled'; ?>
+                                                    data-max="<?php echo $available_stock; ?>">
+                                            </td>
+                                            <td>RWF <?php echo htmlspecialchars($subtotal); ?></td>
+                                            <td>
+                                                <button type="submit" name="remove_item" value="<?php echo $idx; ?>"
+                                                    class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                        <?php } ?>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <th colspan="4" class="text-right">Total:</th>
+                                            <th colspan="2">RWF <?php echo htmlspecialchars($total); ?></th>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                                <div class="d-flex justify-content-between">
+                                    <button type="submit" name="update_cart" class="btn btn-info"><i
+                                            class="fas fa-sync"></i> Update Cart</button>
+                                    <a href="checkout.php" class="btn btn-success"><i class="fas fa-credit-card"></i>
+                                        Proceed to Checkout</a>
+                                </div>
+                            </form>
+                            <script>
+                            // Prevent entering quantity greater than available stock
+                            document.querySelectorAll('.cart-qty-input').forEach(function(input) {
+                                input.addEventListener('input', function() {
+                                    var max = parseInt(this.getAttribute('data-max'));
+                                    if (parseInt(this.value) > max) {
+                                        this.value = max;
+                                        alert(
+                                            'You cannot set a quantity greater than available stock.'
+                                        );
+                                    }
                                 });
-                                </script>
+                            });
+                            </script>
                             <?php } ?>
                         </div>
                     </div>

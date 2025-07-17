@@ -79,17 +79,17 @@ require_once('partials/_head.php');
                                         // Extract product info from items JSON
                                         $items = json_decode($order->items, true);
                                         ?>
-                                        <tr>
-                                            <td class="text-success"><?php echo $i++; ?></td>
-                                            <td>
-                                                <b><?php echo htmlspecialchars($customer_name); ?></b><br>
-                                                <small>Phone: <?php echo htmlspecialchars($customer_phone); ?></small><br>
-                                                <?php if ($customer_email !== '-') { ?>
-                                                    <small>Email: <?php echo htmlspecialchars($customer_email); ?></small>
-                                                <?php } ?>
-                                            </td>
-                                            <td>
-                                                <?php
+                                    <tr>
+                                        <td class="text-success"><?php echo $i++; ?></td>
+                                        <td>
+                                            <b><?php echo htmlspecialchars($customer_name); ?></b><br>
+                                            <small>Phone: <?php echo htmlspecialchars($customer_phone); ?></small><br>
+                                            <?php if ($customer_email !== '-') { ?>
+                                            <small>Email: <?php echo htmlspecialchars($customer_email); ?></small>
+                                            <?php } ?>
+                                        </td>
+                                        <td>
+                                            <?php
                                                 if (is_array($items) && count($items) > 0) {
                                                     foreach ($items as $prod) {
                                                         $prod_name = isset($prod['prod_name']) ? $prod['prod_name'] : '-';
@@ -108,9 +108,9 @@ require_once('partials/_head.php');
                                                     echo '-';
                                                 }
                                                 ?>
-                                            </td>
-                                            <td>
-                                                <?php
+                                        </td>
+                                        <td>
+                                            <?php
                                                 // Show total for all products
                                                 $total = 0;
                                                 if (is_array($items) && count($items) > 0) {
@@ -124,33 +124,27 @@ require_once('partials/_head.php');
                                                 }
                                                 echo 'RWF ' . htmlspecialchars($total);
                                                 ?>
-                                            </td>
-                                            <td><?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></td>
-                                            <td>
-                                                <div><b>Type:</b> <?php echo htmlspecialchars($order->order_type); ?></div>
-                                                <div><b>Status:</b> <?php echo htmlspecialchars($order->status); ?></div>
-                                                <a
-                                                    href="pay_order.php?order_id=<?php echo $order->order_id; ?>&customer_id=<?php echo $order->customer_id; ?>&order_status=Paid">
-                                                    <button class="btn btn-sm btn-success">
-                                                        <i class="fas fa-handshake"></i>
-                                                        Pay Order
-                                                    </button>
-                                                </a>
-                                                <a href="payments.php?cancel=<?php echo $order->order_id; ?>">
-                                                    <button class="btn btn-sm btn-danger">
-                                                        <i class="fas fa-window-close"></i>
-                                                        Cancel Order
-                                                    </button>
-                                                </a>
-                                                <a href="print_receipt.php?order_id=<?php echo $order->order_id; ?>"
-                                                    target="_blank">
-                                                    <button class="btn btn-sm btn-primary">
-                                                        <i class="fas fa-print"></i>
-                                                        Generate Receipt
-                                                    </button>
-                                                </a>
-                                            </td>
-                                        </tr>
+                                        </td>
+                                        <td><?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></td>
+                                        <td>
+                                            <div><b>Type:</b> <?php echo htmlspecialchars($order->order_type); ?></div>
+                                            <div><b>Status:</b> <?php echo htmlspecialchars($order->status); ?></div>
+                                            <a
+                                                href="pay_order.php?order_id=<?php echo $order->order_id; ?>&customer_id=<?php echo $order->customer_id; ?>&order_status=Paid">
+                                                <button class="btn btn-sm btn-success">
+                                                    <i class="fas fa-handshake"></i>
+                                                    Pay Order
+                                                </button>
+                                            </a>
+                                            <a href="payments.php?cancel=<?php echo $order->order_id; ?>">
+                                                <button class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-window-close"></i>
+                                                    Cancel Order
+                                                </button>
+                                            </a>
+
+                                        </td>
+                                    </tr>
                                     <?php } ?>
                                 </tbody>
                             </table>

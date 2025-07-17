@@ -72,7 +72,7 @@ require_once('partials/_head.php');
                                         </td>
                                         <td><?php echo $prod->prod_code; ?></td>
                                         <td><?php echo $prod->prod_name; ?></td>
-                                        <td>$ <?php echo $prod->prod_price; ?></td>
+                                        <td>RWF <?php echo $prod->prod_price; ?></td>
                                         <td>
                                             <a
                                                 href="make_order.php?prod_id=<?php echo $prod->prod_id; ?>&prod_name=<?php echo $prod->prod_name; ?>&prod_price=<?php echo $prod->prod_price; ?>">

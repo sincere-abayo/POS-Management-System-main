@@ -163,6 +163,10 @@ if (!($order = $res->fetch_object())) {
     echo '<div class="alert alert-danger">Order not found.</div>';
     exit;
 }
+if (!in_array($order->status, ['paid', 'packed', 'delivered'])) {
+    echo '<div class="alert alert-danger">Receipt is only available for paid orders.</div>';
+    exit;
+}
 $items = json_decode($order->items, true);
 $customer_name = $order->customer_name ? $order->customer_name : $order->customer_id;
 $customer_phone = $order->customer_phoneno ? $order->customer_phoneno : '-';

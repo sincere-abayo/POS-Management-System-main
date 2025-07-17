@@ -44,13 +44,15 @@ require_once('partials/_head.php');
                                         <th scope="col">Payment Method</th>
                                         <th class="text-success" scope="col">Products</th>
                                         <th scope="col">Amount Paid</th>
+                                        <th scope="col">Payment Status</th>
                                         <th class="text-success" scope="col">Date Paid</th>
+                                        <th scope="col">Order ID</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
                                     $i = 1;
-                                    $ret = "SELECT p.*, o.items FROM rpos_payments p JOIN rpos_orders o ON p.order_id = o.order_id ORDER BY p.created_at DESC ";
+                                    $ret = "SELECT p.*, o.items FROM rpos_payments p LEFT JOIN rpos_orders o ON p.order_id = o.order_id ORDER BY p.created_at DESC ";
                                     $stmt = $mysqli->prepare($ret);
                                     $stmt->execute();
                                     $res = $stmt->get_result();
@@ -58,26 +60,34 @@ require_once('partials/_head.php');
                                         ?>
                                         <tr>
                                             <th class="text-success" scope="row"><?php echo $i++; ?></th>
-                                            <th scope="row">
-                                                <?php echo $payment->method; ?>
-                                            </th>
-                                            <td class="text-success">
+                                            <td><?php echo ucfirst(htmlspecialchars($payment->method)); ?></td>
+                                            <td>
                                                 <?php
-                                                $items = json_decode($payment->items, true);
+                                                $items = isset($payment->items) ? json_decode($payment->items, true) : null;
                                                 if (is_array($items) && count($items) > 0) {
                                                     $names = array_column($items, 'prod_name');
                                                     echo htmlspecialchars($names[0]);
                                                     if (count($names) > 1) {
                                                         echo ' +' . (count($names) - 1) . ' more';
                                                     }
+                                                } else {
+                                                    echo '-';
                                                 }
                                                 ?>
                                             </td>
-                                            <td>
-                                                RWF <?php echo number_format($payment->amount, 2); ?>
-                                            </td>
+                                            <td>RWF <?php echo number_format($payment->amount, 2); ?></td>
+                                            <td><?php echo ucfirst($payment->status); ?></td>
                                             <td class="text-success">
-                                                <?php echo date('d/M/Y g:i', strtotime($payment->created_at)) ?>
+                                                <?php echo date('d/M/Y g:i', strtotime($payment->created_at)) ?></td>
+                                            <td>
+                                                <?php if ($payment->order_id) { ?>
+                                                    <a href="print_receipt.php?order_id=<?php echo $payment->order_id; ?>"
+                                                        target="_blank">
+                                                        <?php echo htmlspecialchars($payment->order_id); ?>
+                                                    </a>
+                                                <?php } else {
+                                                    echo '-';
+                                                } ?>
                                             </td>
                                         </tr>
                                     <?php } ?>

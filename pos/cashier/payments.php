@@ -141,13 +141,6 @@ require_once('partials/_head.php');
                                                         Cancel Order
                                                     </button>
                                                 </a>
-                                                <a href="print_receipt.php?order_id=<?php echo $order->order_id; ?>"
-                                                    target="_blank">
-                                                    <button class="btn btn-sm btn-primary">
-                                                        <i class="fas fa-print"></i>
-                                                        Generate Receipt
-                                                    </button>
-                                                </a>
                                             </td>
                                         </tr>
                                     <?php } ?>

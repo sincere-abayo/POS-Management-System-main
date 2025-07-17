@@ -54,13 +54,12 @@ require_once('partials/_head.php');
                             <table class="table align-items-center table-flush">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th>#</th>
                                         <th>Customer</th>
                                         <th>Products</th>
-                                        <th>Unit Price</th>
-                                        <th>Qty</th>
                                         <th>Total</th>
+                                        <th>Payment Status</th>
                                         <th>Status</th>
+                                        <th>Order Type</th>
                                         <th>Date</th>
                                     </tr>
                                 </thead>
@@ -91,75 +90,77 @@ require_once('partials/_head.php');
                                     while ($order = $res->fetch_object()) {
                                         $items = json_decode($order->items, true);
                                         $total = 0;
+                                        $product_names = [];
                                         foreach ($items as $item) {
                                             $qty = isset($item['prod_qty']) ? $item['prod_qty'] : 1;
                                             $price = isset($item['prod_price']) ? $item['prod_price'] : 0;
                                             $total += $price * $qty;
+                                            $product_names[] = $item['prod_name'];
                                         }
+                                        // Fetch payment status
+                                        $pay_stmt = $mysqli->prepare("SELECT status FROM rpos_payments WHERE order_id = ? ORDER BY created_at DESC LIMIT 1");
+                                        $pay_stmt->bind_param('i', $order->order_id);
+                                        $pay_stmt->execute();
+                                        $pay_stmt->bind_result($pay_status);
+                                        $has_payment = $pay_stmt->fetch();
+                                        $pay_stmt->close();
                                         ?>
-                                        <tr>
-                                            <td><?php echo $i++; ?></td>
-                                            <td>
-                                                <?php echo htmlspecialchars($order->customer_name); ?><br>
-                                                <?php echo htmlspecialchars($order->customer_phoneno); ?><br>
-                                                <?php if (strpos($order->customer_email, '@noemail.com') === false)
+                                    <tr>
+                                        <td>
+                                            <?php echo htmlspecialchars($order->customer_name); ?><br>
+                                            <?php echo htmlspecialchars($order->customer_phoneno); ?><br>
+                                            <?php if (strpos($order->customer_email, '@noemail.com') === false)
                                                     echo htmlspecialchars($order->customer_email); ?>
-                                            </td>
-                                            <td>
-                                                <?php
-                                                foreach ($items as $item) {
-                                                    $prod_code = isset($item['prod_code']) && $item['prod_code'] !== null ? htmlspecialchars($item['prod_code']) : '-';
-                                                    echo '<b>' . $prod_code . '</b>: ' . htmlspecialchars($item['prod_name']) . '<br>';
+                                        </td>
+                                        <td>
+                                            <?php
+                                                echo htmlspecialchars($product_names[0]);
+                                                if (count($product_names) > 1) {
+                                                    echo ' +' . (count($product_names) - 1) . ' more';
                                                 }
                                                 ?>
-                                            </td>
-                                            <td>
-                                                <?php
-                                                foreach ($items as $item) {
-                                                    $price = isset($item['prod_price']) ? $item['prod_price'] : 0;
-                                                    echo 'RWF ' . htmlspecialchars($price) . '<br>';
+                                        </td>
+                                        <td>RWF <?php echo number_format($total, 2); ?></td>
+                                        <td>
+                                            <?php
+                                                if ($has_payment && $pay_status == 'paid') {
+                                                    echo "<span class='badge badge-success'>Paid</span>";
+                                                } else {
+                                                    echo "<span class='badge badge-danger'>Unpaid</span>";
                                                 }
                                                 ?>
-                                            </td>
-                                            <td>
-                                                <?php
-                                                foreach ($items as $item) {
-                                                    $qty = isset($item['prod_qty']) ? $item['prod_qty'] : 1;
-                                                    echo htmlspecialchars($qty) . '<br>';
-                                                }
-                                                ?>
-                                            </td>
-                                            <td>RWF <?php echo htmlspecialchars($total); ?></td>
-                                            <td>
-                                                <?php
+                                        </td>
+                                        <td>
+                                            <?php
                                                 if ($order->order_type == 'online') {
                                                     ?>
-                                                    <form method="post" style="display:inline;">
-                                                        <input type="hidden" name="order_id"
-                                                            value="<?php echo $order->order_id; ?>">
-                                                        <select name="new_status"
-                                                            class="form-control form-control-sm d-inline w-auto"
-                                                            onchange="this.form.submit()">
-                                                            <option value="pending" <?php if ($order->status == 'pending')
+                                            <form method="post" style="display:inline;">
+                                                <input type="hidden" name="order_id"
+                                                    value="<?php echo $order->order_id; ?>">
+                                                <select name="new_status"
+                                                    class="form-control form-control-sm d-inline w-auto"
+                                                    onchange="this.form.submit()">
+                                                    <option value="pending" <?php if ($order->status == 'pending')
                                                                 echo 'selected'; ?>>Pending</option>
-                                                            <option value="packed" <?php if ($order->status == 'packed')
+                                                    <option value="packed" <?php if ($order->status == 'packed')
                                                                 echo 'selected'; ?>>Packed</option>
-                                                            <option value="delivered" <?php if ($order->status == 'delivered')
+                                                    <option value="delivered" <?php if ($order->status == 'delivered')
                                                                 echo 'selected'; ?>>Delivered</option>
-                                                            <option value="cancelled" <?php if ($order->status == 'cancelled')
+                                                    <option value="cancelled" <?php if ($order->status == 'cancelled')
                                                                 echo 'selected'; ?>>Cancelled</option>
-                                                        </select>
-                                                    </form>
-                                                    <span
-                                                        class='badge badge-success ml-2'><?php echo htmlspecialchars($order->status); ?></span>
-                                                    <?php
+                                                </select>
+                                            </form>
+                                            <span
+                                                class='badge badge-success ml-2'><?php echo htmlspecialchars($order->status); ?></span>
+                                            <?php
                                                 } else {
                                                     echo ucfirst($order->status);
                                                 }
                                                 ?>
-                                            </td>
-                                            <td><?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></td>
-                                        </tr>
+                                        </td>
+                                        <td><?php echo ucfirst(str_replace('_', ' ', $order->order_type)); ?></td>
+                                        <td><?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></td>
+                                    </tr>
                                     <?php } ?>
                                 </tbody>
                             </table>
@@ -171,19 +172,19 @@ require_once('partials/_head.php');
         </div>
     </div>
     <style>
-        @media print {
+    @media print {
 
-            .btn,
-            form,
-            .main-content .card-header {
-                display: none !important;
-            }
+        .btn,
+        form,
+        .main-content .card-header {
+            display: none !important;
         }
+    }
     </style>
     <script>
-        function printReport() {
-            window.print();
-        }
+    function printReport() {
+        window.print();
+    }
     </script>
     <?php require_once('partials/_scripts.php'); ?>
 </body>

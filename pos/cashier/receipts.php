@@ -130,17 +130,17 @@ require_once('partials/_head.php');
                 <div class="col">
                     <div class="card shadow">
                         <div class="card-header border-0">
-                            <h3>Unpaid Orders</h3>
+                            <h3>Paid Orders</h3>
                         </div>
                         <div class="table-responsive">
                             <?php
-                            // Fetch all unpaid orders
-                            $ret = "SELECT o.*, c.customer_name, c.customer_phoneno, c.customer_email FROM rpos_orders o LEFT JOIN rpos_customers c ON o.customer_id = c.customer_id WHERE o.status = 'pending' ORDER BY o.created_at DESC";
+                            // Fetch all orders with a paid payment
+                            $ret = "SELECT o.*, c.customer_name, c.customer_phoneno, c.customer_email, p.status as payment_status FROM rpos_orders o LEFT JOIN rpos_customers c ON o.customer_id = c.customer_id LEFT JOIN rpos_payments p ON o.payment_id = p.payment_id WHERE p.status = 'paid' ORDER BY o.created_at DESC";
                             $stmt = $mysqli->prepare($ret);
                             $stmt->execute();
                             $res = $stmt->get_result();
                             if ($res->num_rows == 0) {
-                                echo '<div class="alert alert-success text-center">All orders are paid!</div>';
+                                echo '<div class="alert alert-success text-center">No paid orders found!</div>';
                             } else {
                                 while ($order = $res->fetch_object()) {
                                     $items = json_decode($order->items, true);
