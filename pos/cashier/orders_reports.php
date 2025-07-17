@@ -7,68 +7,115 @@ require_once('partials/_head.php');
 ?>
 
 <body>
-    <!-- Sidenav -->
-    <?php
-    require_once('partials/_sidebar.php');
-    ?>
-    <!-- Main content -->
+    <?php require_once('partials/_sidebar.php'); ?>
     <div class="main-content">
-        <!-- Top navbar -->
-        <?php
-        require_once('partials/_topnav.php');
-        ?>
-        <!-- Header -->
-        <div style="background-image: url(../admin/assets/img/theme/restro00.jpg); background-size: cover;" class="header pb-8 pt-5 pt-md-8">
+        <?php require_once('partials/_topnav.php'); ?>
+        <div style="background-image: url(../admin/assets/img/theme/restro00.jpg); background-size: cover;"
+            class="header pb-8 pt-5 pt-md-8">
             <span class="mask bg-gradient-dark opacity-8"></span>
             <div class="container-fluid">
-                <div class="header-body">
-                </div>
+                <div class="header-body"></div>
             </div>
         </div>
-        <!-- Page content -->
         <div class="container-fluid mt--8">
-            <!-- Table -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <form method="get" class="form-inline justify-content-end">
+                        <label class="mr-2">From:</label>
+                        <input type="date" name="from" class="form-control mr-2"
+                            value="<?php echo isset($_GET['from']) ? htmlspecialchars($_GET['from']) : ''; ?>">
+                        <label class="mr-2">To:</label>
+                        <input type="date" name="to" class="form-control mr-2"
+                            value="<?php echo isset($_GET['to']) ? htmlspecialchars($_GET['to']) : ''; ?>">
+                        <button type="submit" class="btn btn-info">Filter</button>
+                        <button type="button" class="btn btn-primary ml-2" onclick="printReport()"><i
+                                class="fas fa-print"></i> Print Report</button>
+                    </form>
+                </div>
+            </div>
             <div class="row">
                 <div class="col">
                     <div class="card shadow">
                         <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                            <span class="h3">Orders Records</span>
-                            <button class="btn btn-primary" onclick="printReport()">
-                                <i class="fas fa-print"></i> Print Report
-                            </button>
+                            <span class="h3">Order Records</span>
                         </div>
                         <div class="table-responsive">
                             <table class="table align-items-center table-flush">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th class="text-success" scope="col">Code</th>
-                                        <th scope="col">Customer</th>
-                                        <th class="text-success" scope="col">Product</th>
-                                        <th scope="col">Unit Price</th>
-                                        <th class="text-success" scope="col">#</th>
-                                        <th scope="col">Total Price</th>
-                                        <th scope="col">Status</th>
-                                        <th class="text-success" scope="col">Date</th>
+                                        <th>Order ID</th>
+                                        <th>Customer</th>
+                                        <th>Products</th>
+                                        <th>Unit Price</th>
+                                        <th>Qty</th>
+                                        <th>Total</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $ret = "SELECT * FROM rpos_orders ORDER BY `created_at` DESC";
+                                    $where = '';
+                                    $params = [];
+                                    if (!empty($_GET['from']) && !empty($_GET['to'])) {
+                                        $where = 'WHERE DATE(o.created_at) BETWEEN ? AND ?';
+                                        $params[] = $_GET['from'];
+                                        $params[] = $_GET['to'];
+                                    } elseif (!empty($_GET['from'])) {
+                                        $where = 'WHERE DATE(o.created_at) >= ?';
+                                        $params[] = $_GET['from'];
+                                    } elseif (!empty($_GET['to'])) {
+                                        $where = 'WHERE DATE(o.created_at) <= ?';
+                                        $params[] = $_GET['to'];
+                                    }
+                                    $ret = "SELECT o.*, c.customer_name, c.customer_phoneno, c.customer_email FROM rpos_orders o LEFT JOIN rpos_customers c ON o.customer_id = c.customer_id $where ORDER BY o.created_at DESC";
                                     $stmt = $mysqli->prepare($ret);
+                                    if ($params) {
+                                        $types = str_repeat('s', count($params));
+                                        $stmt->bind_param($types, ...$params);
+                                    }
                                     $stmt->execute();
                                     $res = $stmt->get_result();
                                     while ($order = $res->fetch_object()) {
-                                        $total = ($order->prod_price * $order->prod_qty);
-                                    ?>
+                                        $items = json_decode($order->items, true);
+                                        $total = 0;
+                                        foreach ($items as $item) {
+                                            $total += $item['prod_price'] * $item['prod_qty'];
+                                        }
+                                        ?>
                                         <tr>
-                                            <th class="text-success" scope="row"><?php echo $order->order_code; ?></th>
-                                            <td><?php echo $order->customer_name; ?></td>
-                                            <td class="text-success"><?php echo $order->prod_name; ?></td>
-                                            <td>$ <?php echo $order->prod_price; ?></td>
-                                            <td class="text-success"><?php echo $order->prod_qty; ?></td>
-                                            <td>$ <?php echo $total; ?></td>
-                                            <td><?php echo ($order->order_status == '') ? "<span class='badge badge-danger'>Not Paid</span>" : "<span class='badge badge-success'>$order->order_status</span>"; ?></td>
-                                            <td class="text-success"><?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></td>
+                                            <td><?php echo htmlspecialchars($order->order_id); ?></td>
+                                            <td>
+                                                <?php echo htmlspecialchars($order->customer_name); ?><br>
+                                                <?php echo htmlspecialchars($order->customer_phoneno); ?><br>
+                                                <?php if (strpos($order->customer_email, '@noemail.com') === false)
+                                                    echo htmlspecialchars($order->customer_email); ?>
+                                            </td>
+                                            <td>
+                                                <?php
+                                                foreach ($items as $item) {
+                                                    $prod_code = isset($item['prod_code']) && $item['prod_code'] !== null ? htmlspecialchars($item['prod_code']) : '-';
+                                                    echo '<b>' . $prod_code . '</b>: ' . htmlspecialchars($item['prod_name']) . '<br>';
+                                                }
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <?php
+                                                foreach ($items as $item) {
+                                                    echo 'RWF ' . htmlspecialchars($item['prod_price']) . '<br>';
+                                                }
+                                                ?>
+                                            </td>
+                                            <td>
+                                                <?php
+                                                foreach ($items as $item) {
+                                                    echo htmlspecialchars($item['prod_qty']) . '<br>';
+                                                }
+                                                ?>
+                                            </td>
+                                            <td>RWF <?php echo htmlspecialchars($total); ?></td>
+                                            <td><?php echo ucfirst($order->status); ?></td>
+                                            <td><?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></td>
                                         </tr>
                                     <?php } ?>
                                 </tbody>
@@ -77,22 +124,21 @@ require_once('partials/_head.php');
                     </div>
                 </div>
             </div>
-            <!-- Footer -->
-            <?php
-            require_once('partials/_footer.php');
-            ?>
+            <?php require_once('partials/_footer.php'); ?>
         </div>
     </div>
-    <!-- JavaScript for Print Function -->
-    <script>
-        function printReport() {
-            window.print();
+    <style>
+        @media print {
+
+            .btn,
+            form,
+            .main-content .card-header {
+                display: none !important;
+            }
         }
-    </script>
-    <!-- Argon Scripts -->
-    <?php
-    require_once('partials/_scripts.php');
-    ?>
+    </style>
+    <script>function printReport() { window.print(); }</script>
+    <?php require_once('partials/_scripts.php'); ?>
 </body>
 
 </html>
