@@ -64,26 +64,26 @@ require_once('partials/_head.php');
                                                 $price = isset($item['prod_price']) ? $item['prod_price'] : 0;
                                                 $total = $price * $qty;
                                                 ?>
-                                                <tr>
-                                                    <th class="text-success" scope="row"><?php echo $i++; ?></th>
-                                                    <td><?php echo htmlspecialchars($order->customer_name); ?></td>
-                                                    <td class="text-success"><?php echo htmlspecialchars($item['prod_name']); ?>
-                                                    </td>
-                                                    <td>RWF <?php echo number_format($price, 2); ?></td>
-                                                    <td class="text-success"><?php echo $qty; ?></td>
-                                                    <td>RWF <?php echo number_format($total, 2); ?></td>
-                                                    <td><?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></td>
-                                                    <td>
-                                                        <a target="_blank"
-                                                            href="print_receipt.php?order_id=<?php echo $order->order_id; ?>">
-                                                            <button class="btn btn-sm btn-primary">
-                                                                <i class="fas fa-print"></i>
-                                                                Print Receipt
-                                                            </button>
-                                                        </a>
-                                                    </td>
-                                                </tr>
-                                            <?php }
+                                    <tr>
+                                        <th class="text-success" scope="row"><?php echo $i++; ?></th>
+                                        <td><?php echo htmlspecialchars($order->customer_name); ?></td>
+                                        <td class="text-success"><?php echo htmlspecialchars($item['prod_name']); ?>
+                                        </td>
+                                        <td>RWF <?php echo number_format($price, 2); ?></td>
+                                        <td class="text-success"><?php echo $qty; ?></td>
+                                        <td>RWF <?php echo number_format($total, 2); ?></td>
+                                        <td><?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></td>
+                                        <td>
+                                            <a target="_blank"
+                                                href="print_receipt.php?order_id=<?php echo $order->order_id; ?>">
+                                                <button class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-print"></i>
+                                                    Print Receipt
+                                                </button>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <?php }
                                         }
                                     } ?>
                                 </tbody>

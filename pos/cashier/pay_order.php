@@ -132,8 +132,8 @@ require_once('partials/_head.php');
         <?php require_once('partials/_footer.php'); ?>
       </div>
     <?php } ?>
-  </div>
-  <!-- Argon Scripts -->
+    </div>
+    <!-- Argon Scripts -->
   <?php require_once('partials/_scripts.php'); ?>
 </body>
 
