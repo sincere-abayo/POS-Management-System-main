@@ -7,17 +7,19 @@ $stmt->execute();
 $res = $stmt->get_result();
 while ($customer = $res->fetch_object()) {
 
-?>
+    ?>
     <nav class="navbar navbar-top navbar-expand-md navbar-dark" id="navbar-main">
         <div class="container-fluid">
             <!-- Brand -->
-            <a class="h4 mb-0 text-white text-uppercase d-none d-lg-inline-block" href="dashboard.php"><?php echo $customer->customer_name; ?> Dashboard</a>
+            <a class="h4 mb-0 text-white text-uppercase d-none d-lg-inline-block"
+                href="dashboard.php"><?php echo $customer->customer_name; ?> Dashboard</a>
             <!-- Form -->
 
             <!-- User -->
             <ul class="navbar-nav align-items-center d-none d-md-flex">
                 <li class="nav-item dropdown">
-                    <a class="nav-link pr-0" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <a class="nav-link pr-0" href="#" role="button" data-toggle="dropdown" aria-haspopup="true"
+                        aria-expanded="false">
                         <div class="media align-items-center">
                             <span class="avatar avatar-sm rounded-circle">
                                 <img alt="Image placeholder" src="../admin/assets/img/theme/user-a-min.png">
@@ -41,6 +43,13 @@ while ($customer = $res->fetch_object()) {
                             <span>Logout</span>
                         </a>
                     </div>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="cart.php">
+                        <i class="fas fa-shopping-cart"></i>
+                        <?php if (!empty($_SESSION['cart']))
+                            echo '<span class="badge badge-danger">' . array_sum(array_column($_SESSION['cart'], 'quantity')) . '</span>'; ?>
+                    </a>
                 </li>
             </ul>
         </div>

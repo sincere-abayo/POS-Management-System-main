@@ -56,16 +56,16 @@ require_once('partials/_head.php');
                             <table class="table align-items-center table-flush">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th scope="col">Code</th>
-                                        <th scope="col">Customer</th>
-                                        <th scope="col">Product</th>
-                                        <th scope="col">Total Price</th>
-                                        <th scope="col">Date</th>
-                                        <th scope="col">Action</th>
+                                        <th class="text-success">#</th>
+                                        <th>Payment Method</th>
+                                        <th class="text-success">Products</th>
+                                        <th>Amount Paid</th>
+                                        <th class="text-success">Date Paid</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
+                                    $i = 1;
                                     $ret = "SELECT o.*, c.customer_name, c.customer_phoneno, c.customer_email FROM rpos_orders o LEFT JOIN rpos_customers c ON o.customer_id = c.customer_id WHERE o.status = 'pending' ORDER BY o.created_at DESC";
                                     $stmt = $mysqli->prepare($ret);
                                     $stmt->execute();

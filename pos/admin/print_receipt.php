@@ -28,9 +28,9 @@ check_login();
     <script src="assets/js/bootstrap.js"></script>
     <script src="assets/js/jquery.js"></script>
     <style>
-    body {
-        margin-top: 20px;
-    }
+        body {
+            margin-top: 20px;
+        }
     </style>
 </head>
 </style>
@@ -122,124 +122,119 @@ if ($order_id) {
     <script src="assets/js/bootstrap.js"></script>
     <script src="assets/js/jquery.js"></script>
     <style>
-    body {
-        margin-top: 20px;
-    }
+        body {
+            margin-top: 20px;
+        }
     </style>
 </head>
 </style>
 <?php
-$order_code = $_GET['order_code'];
-$ret = "SELECT * FROM  rpos_orders WHERE order_code = '$order_code'";
-$stmt = $mysqli->prepare($ret);
-$stmt->execute();
-$res = $stmt->get_result();
-while ($order = $res->fetch_object()) {
-    $total = ($order->prod_price * $order->prod_qty);
-
+$order_id = isset($_GET['order_id']) ? $_GET['order_id'] : null;
+if ($order_id) {
+    $ret = "SELECT o.*, c.customer_name, c.customer_phoneno, c.customer_email FROM rpos_orders o LEFT JOIN rpos_customers c ON o.customer_id = c.customer_id WHERE o.order_id = ?";
+    $stmt = $mysqli->prepare($ret);
+    $stmt->bind_param('i', $order_id);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $order = $res->fetch_object();
+    $items = json_decode($order->items, true);
+    $customer_name = $order->customer_name ? $order->customer_name : $order->customer_id;
+    $customer_phone = $order->customer_phoneno ? $order->customer_phoneno : '-';
+    $customer_email = ($order->customer_email && strpos($order->customer_email, '@noemail.com') === false) ? $order->customer_email : '-';
     ?>
 
-<body>
-    <div class="container">
-        <div class="row">
-            <div id="Receipt" class="well col-xs-10 col-sm-10 col-md-6 col-xs-offset-1 col-sm-offset-1 col-md-offset-3">
-                <div class="row">
-                    <div class="col-xs-6 col-sm-6 col-md-6">
-                        <address>
-                            <strong>BEST FRIEND SUPERMARKET</strong>
-                            <br>
-                            KIGALI, Kimironko
-                            <br>
-                            +250785617132
-                        </address>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div id="Receipt" class="well col-xs-10 col-sm-10 col-md-6 col-xs-offset-1 col-sm-offset-1 col-md-offset-3">
+                    <div class="row">
+                        <div class="col-xs-6 col-sm-6 col-md-6">
+                            <address>
+                                <strong>BEST FRIEND SUPERMARKET</strong>
+                                <br>
+                                KIGALI, Kimironko
+                                <br>
+                                +250785617132
+                            </address>
+                        </div>
+                        <div class="col-xs-6 col-sm-6 col-md-6 text-right">
+                            <p>
+                                <em>Date: <?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></em>
+                            </p>
+                            <p>
+                                <em class="text-success">Receipt #: <?php echo $order->order_id; ?></em>
+                            </p>
+                        </div>
                     </div>
-                    <div class="col-xs-6 col-sm-6 col-md-6 text-right">
-                        <p>
-                            <em>Date: <?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></em>
-                        </p>
-                        <p>
-                            <em class="text-success">Receipt #: <?php echo $order->order_code; ?></em>
-                        </p>
+                    <div class="row">
+                        <div class="text-center">
+                            <h2>Receipt</h2>
+                        </div>
+                        </span>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Code</th>
+                                    <th>Quantity</th>
+                                    <th class="text-center">Unit Price</th>
+                                    <th class="text-center">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php
+                                $total = 0;
+                                if (is_array($items) && count($items) > 0) {
+                                    foreach ($items as $prod) {
+                                        $prod_name = isset($prod['prod_name']) ? $prod['prod_name'] : '-';
+                                        $prod_code = isset($prod['prod_code']) ? $prod['prod_code'] : '';
+                                        $prod_qty = isset($prod['prod_qty']) ? $prod['prod_qty'] : 0;
+                                        $prod_price = isset($prod['prod_price']) ? $prod['prod_price'] : 0;
+                                        $subtotal = (is_numeric($prod_price) && is_numeric($prod_qty)) ? ($prod_price * $prod_qty) : 0;
+                                        $total += $subtotal;
+                                        ?>
+                                        <tr>
+                                            <td class="col-md-4"><em> <?php echo htmlspecialchars($prod_name); ?> </em></td>
+                                            <td class="col-md-2"><?php echo htmlspecialchars($prod_code); ?></td>
+                                            <td class="col-md-2" style="text-align: center"> <?php echo $prod_qty; ?></td>
+                                            <td class="col-md-2 text-center">RWF <?php echo number_format($prod_price, 2); ?></td>
+                                            <td class="col-md-2 text-center">RWF <?php echo number_format($subtotal, 2); ?></td>
+                                        </tr>
+                                    <?php }
+                                } ?>
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4" class="text-right"><strong>Total:</strong></td>
+                                    <td class="text-center text-danger"><strong>RWF
+                                            <?php echo number_format($total, 2); ?></strong></td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="text-center">
-                        <h2>Receipt</h2>
+                <div class="well col-xs-10 col-sm-10 col-md-6 col-xs-offset-1 col-sm-offset-1 col-md-offset-3">
+                    <div class="text-center mt-4">
+                        <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print"></i> Print
+                            Receipt</button>
+                        <?php if ($customer_email !== '-') { ?>
+                            <a href="?order_id=<?php echo $order_id; ?>&email=1" class="btn btn-info ml-2"><i
+                                    class="fas fa-envelope"></i> Email Receipt</a>
+                        <?php } ?>
                     </div>
-                    </span>
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Quantity</th>
-                                <th class="text-center">Unit Price</th>
-                                <th class="text-center">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="col-md-9"><em> <?php echo $order->prod_name; ?> </em></h4>
-                                </td>
-                                <td class="col-md-1" style="text-align: center"> <?php echo $order->prod_qty; ?></td>
-                                <td class="col-md-1 text-center">$<?php echo $order->prod_price; ?></td>
-                                <td class="col-md-1 text-center">$<?php echo $total; ?></td>
-                            </tr>
-                            <tr>
-                                <td>   </td>
-                                <td>   </td>
-                                <td class="text-right">
-                                    <p>
-                                        <strong>Subtotal: </strong>
-                                    </p>
-                                    <p>
-                                        <strong>Tax: </strong>
-                                    </p>
-                                </td>
-                                <td class="text-center">
-                                    <p>
-                                        <strong>$<?php echo $total; ?></strong>
-                                    </p>
-                                    <p>
-                                        <strong>14%</strong>
-                                    </p>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>   </td>
-                                <td>   </td>
-                                <td class="text-right">
-                                    <h4><strong>Total: </strong></h4>
-                                </td>
-                                <td class="text-center text-danger">
-                                    <h4><strong>$<?php echo $total; ?></strong></h4>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="well col-xs-10 col-sm-10 col-md-6 col-xs-offset-1 col-sm-offset-1 col-md-offset-3">
-                <div class="text-center mt-4">
-                    <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print"></i> Print
-                        Receipt</button>
-                    <?php if ($customer_email !== '-') { ?>
-                    <a href="?order_id=<?php echo $order_id; ?>&email=1" class="btn btn-info ml-2"><i
-                            class="fas fa-envelope"></i> Email Receipt</a>
-                    <?php } ?>
                 </div>
             </div>
         </div>
-    </div>
-</body>
+    </body>
 
-</html>
-<script>
-function printContent(el) {
-    var restorepage = $('body').html();
-    var printcontent = $('#' + el).clone();
-    $('body').empty().html(printcontent);
-    window.print();
-    $('body').html(restorepage);
-}
-</script>
+    </html>
+    <script>
+        function printContent(el) {
+            var restorepage = $('body').html();
+            var printcontent = $('#' + el).clone();
+            $('body').empty().html(printcontent);
+            window.print();
+            $('body').html(restorepage);
+        }
+    </script>
 <?php } ?>

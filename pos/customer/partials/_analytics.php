@@ -19,8 +19,9 @@ $stmt->fetch();
 $stmt->close();
 
 //4.My Payments
-$query = "SELECT SUM(amount) FROM `rpos_payments` WHERE customer_id = '$customer_id' ";
+$query = "SELECT SUM(p.amount) FROM rpos_payments p JOIN rpos_orders o ON p.order_id = o.order_id WHERE o.customer_id = ?";
 $stmt = $mysqli->prepare($query);
+$stmt->bind_param('s', $customer_id);
 $stmt->execute();
 $stmt->bind_result($sales);
 $stmt->fetch();

@@ -40,33 +40,41 @@ require_once('partials/_head.php');
                             <table class="table align-items-center table-flush">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th class="text-success" scope="col">Payment Code</th>
+                                        <th class="text-success" scope="col">#</th>
                                         <th scope="col">Payment Method</th>
-                                        <th class="text-success" scope="col">Order Code</th>
+                                        <th class="text-success" scope="col">Products</th>
                                         <th scope="col">Amount Paid</th>
                                         <th class="text-success" scope="col">Date Paid</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $ret = "SELECT * FROM  rpos_payments ORDER BY `created_at` DESC ";
+                                    $i = 1;
+                                    $ret = "SELECT p.*, o.items FROM rpos_payments p JOIN rpos_orders o ON p.order_id = o.order_id ORDER BY p.created_at DESC ";
                                     $stmt = $mysqli->prepare($ret);
                                     $stmt->execute();
                                     $res = $stmt->get_result();
                                     while ($payment = $res->fetch_object()) {
                                         ?>
                                         <tr>
-                                            <th class="text-success" scope="row">
-                                                <?php echo $payment->pay_code; ?>
-                                            </th>
+                                            <th class="text-success" scope="row"><?php echo $i++; ?></th>
                                             <th scope="row">
-                                                <?php echo $payment->pay_method; ?>
+                                                <?php echo $payment->method; ?>
                                             </th>
                                             <td class="text-success">
-                                                <?php echo $payment->order_code; ?>
+                                                <?php
+                                                $items = json_decode($payment->items, true);
+                                                if (is_array($items) && count($items) > 0) {
+                                                    $names = array_column($items, 'prod_name');
+                                                    echo htmlspecialchars($names[0]);
+                                                    if (count($names) > 1) {
+                                                        echo ' +' . (count($names) - 1) . ' more';
+                                                    }
+                                                }
+                                                ?>
                                             </td>
                                             <td>
-                                                $ <?php echo $payment->amount; ?>
+                                                RWF <?php echo number_format($payment->amount, 2); ?>
                                             </td>
                                             <td class="text-success">
                                                 <?php echo date('d/M/Y g:i', strtotime($payment->created_at)) ?>

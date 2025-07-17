@@ -43,13 +43,11 @@ require_once('partials/_head.php');
                             <table class="table align-items-center table-flush">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th>Payment ID</th>
-                                        <th>Method</th>
-                                        <th>Order ID</th>
-                                        <th>Order Status</th>
-                                        <th>Amount</th>
-                                        <th>Payment Status</th>
-                                        <th>Date Paid</th>
+                                        <th class="text-success" scope="col">#</th>
+                                        <th scope="col">Payment Method</th>
+                                        <th class="text-success" scope="col">Products</th>
+                                        <th scope="col">Amount Paid</th>
+                                        <th class="text-success" scope="col">Date Paid</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -75,10 +73,11 @@ require_once('partials/_head.php');
                                     }
                                     $stmt->execute();
                                     $res = $stmt->get_result();
+                                    $i = 1;
                                     while ($payment = $res->fetch_object()) {
                                         ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($payment->payment_id); ?></td>
+                                            <th class="text-success" scope="row"><?php echo $i++; ?></th>
                                             <td><?php echo ucfirst(htmlspecialchars($payment->method)); ?></td>
                                             <td>
                                                 <?php if ($payment->order_id) { ?>

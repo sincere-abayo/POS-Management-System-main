@@ -56,12 +56,11 @@ require_once('partials/_head.php');
                             <table class="table align-items-center table-flush">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th scope="col">Code</th>
-                                        <th scope="col">Customer</th>
-                                        <th scope="col">Product</th>
-                                        <th scope="col">Total Price</th>
-                                        <th scope="col">Date</th>
-                                        <th scope="col">Action</th>
+                                        <th class="text-success">#</th>
+                                        <th>Payment Method</th>
+                                        <th class="text-success">Products</th>
+                                        <th>Amount Paid</th>
+                                        <th class="text-success">Date Paid</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -71,6 +70,7 @@ require_once('partials/_head.php');
                                     $stmt = $mysqli->prepare($ret);
                                     $stmt->execute();
                                     $res = $stmt->get_result();
+                                    $i = 1;
                                     while ($order = $res->fetch_object()) {
                                         // Prepare customer info
                                         $customer_name = $order->customer_name ? $order->customer_name : $order->customer_id;
@@ -80,7 +80,7 @@ require_once('partials/_head.php');
                                         $items = json_decode($order->items, true);
                                         ?>
                                         <tr>
-                                            <th class="text-success" scope="row"><?php echo $order->order_id; ?></th>
+                                            <td class="text-success"><?php echo $i++; ?></td>
                                             <td>
                                                 <b><?php echo htmlspecialchars($customer_name); ?></b><br>
                                                 <small>Phone: <?php echo htmlspecialchars($customer_phone); ?></small><br>

@@ -139,33 +139,37 @@ require_once('partials/_analytics.php');
                 </thead>
                 <tbody>
                   <?php
-                  $ret = "SELECT * FROM  rpos_orders ORDER BY `rpos_orders`.`created_at` DESC LIMIT 7 ";
+                  $ret = "SELECT o.*, c.customer_name FROM rpos_orders o LEFT JOIN rpos_customers c ON o.customer_id = c.customer_id ORDER BY o.created_at DESC LIMIT 7 ";
                   $stmt = $mysqli->prepare($ret);
                   $stmt->execute();
                   $res = $stmt->get_result();
+                  $i = 1;
                   while ($order = $res->fetch_object()) {
-                    $price = (float) $order->prod_price;
-                    $qty = (int) $order->prod_qty;
-                    $total = $price * $qty;
-                    ?>
+                    $items = json_decode($order->items, true);
+                    if (is_array($items)) {
+                      foreach ($items as $item) {
+                        $qty = isset($item['prod_qty']) ? $item['prod_qty'] : 1;
+                        $price = isset($item['prod_price']) ? $item['prod_price'] : 0;
+                        $total = $price * $qty;
+                        ?>
 
-                    <tr>
-                      <th class="text-success" scope="row"><?php echo $order->order_code; ?></th>
-                      <td><?php echo $order->customer_name; ?></td>
-                      <td class="text-success"><?php echo $order->prod_name; ?></td>
-                      <td>$<?php echo $order->prod_price; ?></td>
-                      <td class="text-success"><?php echo $order->prod_qty; ?></td>
-                      <td>$<?php echo $total; ?></td>
-                      <td><?php if ($order->order_status == '') {
-                        echo "<span class='badge badge-danger'>Not Paid</span>";
-                      } else {
-                        echo "<span class='badge badge-success'>$order->order_status</span>";
-                      } ?></td>
-                      <td class="text-success">
-                        <?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?>
-                      </td>
-                    </tr>
-                  <?php } ?>
+                        <tr>
+                          <th class="text-success" scope="row"><?php echo $i++; ?></th>
+                          <td><?php echo htmlspecialchars($order->customer_name); ?></td>
+                          <td class="text-success"><?php echo htmlspecialchars($item['prod_name']); ?></td>
+                          <td>RWF <?php echo number_format($price, 2); ?></td>
+                          <td class="text-success"><?php echo $qty; ?></td>
+                          <td>RWF <?php echo number_format($total, 2); ?></td>
+                          <td>
+                            <?php echo ($order->status == 'pending') ? "<span class='badge badge-danger'>Not Paid</span>" : "<span class='badge badge-success'>" . htmlspecialchars($order->status) . "</span>"; ?>
+                          </td>
+                          <td class="text-success">
+                            <?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?>
+                          </td>
+                        </tr>
+                      <?php }
+                    }
+                  } ?>
                 </tbody>
               </table>
             </div>
@@ -198,21 +202,27 @@ require_once('partials/_analytics.php');
                 </thead>
                 <tbody>
                   <?php
-                  $ret = "SELECT * FROM   rpos_payments   ORDER BY `rpos_payments`.`created_at` DESC LIMIT 7 ";
+                  $ret = "SELECT p.*, o.items FROM rpos_payments p JOIN rpos_orders o ON p.order_id = o.order_id ORDER BY p.created_at DESC LIMIT 7 ";
                   $stmt = $mysqli->prepare($ret);
                   $stmt->execute();
                   $res = $stmt->get_result();
+                  $i = 1;
                   while ($payment = $res->fetch_object()) {
                     ?>
                     <tr>
-                      <th class="text-success" scope="row">
-                        <?php echo $payment->pay_code; ?>
-                      </th>
-                      <td>
-                        $<?php echo $payment->amount; ?>
-                      </td>
+                      <th class="text-success" scope="row"><?php echo $i++; ?></th>
+                      <td>RWF <?php echo number_format($payment->amount, 2); ?></td>
                       <td class='text-success'>
-                        <?php echo $payment->order_code; ?>
+                        <?php
+                        $items = json_decode($payment->items, true);
+                        if (is_array($items) && count($items) > 0) {
+                          $names = array_column($items, 'prod_name');
+                          echo htmlspecialchars($names[0]);
+                          if (count($names) > 1) {
+                            echo ' +' . (count($names) - 1) . ' more';
+                          }
+                        }
+                        ?>
                       </td>
                     </tr>
                   <?php } ?>

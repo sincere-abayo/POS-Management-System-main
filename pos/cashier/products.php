@@ -180,7 +180,7 @@ require_once('partials/_head.php');
                                         <td><?php echo $prod->prod_name; ?></td>
                                         <td><?php echo $prod->category ? htmlspecialchars($prod->category) : 'Uncategorized'; ?>
                                         </td>
-                                        <td>$ <?php echo $prod->prod_price; ?></td>
+                                        <td>RWF <?php echo $prod->prod_price; ?></td>
                                         <td>
                                             <span
                                                 class="badge badge-<?php echo $prod->status == 'active' ? 'success' : 'danger'; ?> p-2"

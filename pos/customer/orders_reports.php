@@ -18,8 +18,9 @@ require_once('partials/_head.php');
         require_once('partials/_topnav.php');
         ?>
         <!-- Header -->
-        <div style="background-image: url(../admin/assets/img/theme/restro00.jpg); background-size: cover;" class="header  pb-8 pt-5 pt-md-8">
-        <span class="mask bg-gradient-dark opacity-8"></span>
+        <div style="background-image: url(../admin/assets/img/theme/restro00.jpg); background-size: cover;"
+            class="header  pb-8 pt-5 pt-md-8">
+            <span class="mask bg-gradient-dark opacity-8"></span>
             <div class="container-fluid">
                 <div class="header-body">
                 </div>
@@ -38,7 +39,7 @@ require_once('partials/_head.php');
                             <table class="table align-items-center table-flush">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th class="text-success" scope="col">Code</th>
+                                        <th class="text-success" scope="col">#</th>
                                         <th scope="col">Customer</th>
                                         <th class="text-success" scope="col">Product</th>
                                         <th scope="col">Unit Price</th>
@@ -50,30 +51,43 @@ require_once('partials/_head.php');
                                 </thead>
                                 <tbody>
                                     <?php
+                                    $i = 1;
                                     $customer_id = $_SESSION['customer_id'];
-                                    $ret = "SELECT * FROM  rpos_orders WHERE customer_id ='$customer_id' ORDER BY `created_at` DESC  ";
+                                    $ret = "SELECT o.*, c.customer_name FROM rpos_orders o LEFT JOIN rpos_customers c ON o.customer_id = c.customer_id WHERE o.customer_id ='$customer_id' ORDER BY o.created_at DESC";
                                     $stmt = $mysqli->prepare($ret);
                                     $stmt->execute();
                                     $res = $stmt->get_result();
                                     while ($order = $res->fetch_object()) {
-                                        $total = ($order->prod_price * $order->prod_qty);
-
-                                    ?>
-                                        <tr>
-                                            <th class="text-success" scope="row"><?php echo $order->order_code; ?></th>
-                                            <td><?php echo $order->customer_name; ?></td>
-                                            <td class="text-success"><?php echo $order->prod_name; ?></td>
-                                            <td>$ <?php echo $order->prod_price; ?></td>
-                                            <td class="text-success"><?php echo $order->prod_qty; ?></td>
-                                            <td>$ <?php echo $total; ?></td>
-                                            <td><?php if ($order->order_status == '') {
-                                                    echo "<span class='badge badge-danger'>Not Paid</span>";
-                                                } else {
-                                                    echo "<span class='badge badge-success'>$order->order_status</span>";
-                                                } ?></td>
-                                            <td class="text-success"><?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></td>
-                                        </tr>
-                                    <?php } ?>
+                                        $items = json_decode($order->items, true);
+                                        if (is_array($items)) {
+                                            foreach ($items as $item) {
+                                                $qty = isset($item['prod_qty']) ? $item['prod_qty'] : 1;
+                                                $total = $item['prod_price'] * $qty;
+                                                ?>
+                                                <tr>
+                                                    <th class="text-success" scope="row"><?php echo $i++; ?></th>
+                                                    <td><?php echo htmlspecialchars($order->customer_name); ?></td>
+                                                    <td class="text-success"><?php echo htmlspecialchars($item['prod_name']); ?>
+                                                    </td>
+                                                    <td>RWF <?php echo number_format($item['prod_price'], 2); ?></td>
+                                                    <td class="text-success"><?php echo $qty; ?></td>
+                                                    <td>RWF <?php echo number_format($total, 2); ?></td>
+                                                    <td><?php
+                                                    if ($order->status == 'pending') {
+                                                        echo "<span class='badge badge-danger'>Not Paid</span> ";
+                                                        echo "<a href='pay_order.php?order_id=" . urlencode($order->order_id) . "' class='btn btn-sm btn-primary ml-2'>Pay</a>";
+                                                    } else {
+                                                        echo "<span class='badge badge-success'>" . htmlspecialchars($order->status) . "</span>";
+                                                    }
+                                                    ?></td>
+                                                    <td class="text-success">
+                                                        <?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?>
+                                                    </td>
+                                                </tr>
+                                                <?php
+                                            }
+                                        }
+                                    } ?>
                                 </tbody>
                             </table>
                         </div>

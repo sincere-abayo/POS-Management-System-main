@@ -16,7 +16,8 @@ require_once('partials/_head.php');
         <?php require_once('partials/_topnav.php'); ?>
 
         <!-- Header -->
-        <div style="background-image: url(assets/img/theme/restro00.jpg); background-size: cover;" class="header pb-8 pt-5 pt-md-8">
+        <div style="background-image: url(assets/img/theme/restro00.jpg); background-size: cover;"
+            class="header pb-8 pt-5 pt-md-8">
             <span class="mask bg-gradient-dark opacity-8"></span>
             <div class="container-fluid">
                 <div class="header-body"></div>
@@ -36,7 +37,7 @@ require_once('partials/_head.php');
                             <table class="table align-items-center table-flush">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th class="text-success">Code</th>
+                                        <th class="text-success">#</th>
                                         <th>Customer</th>
                                         <th class="text-success">Product</th>
                                         <th>Unit Price</th>
@@ -48,26 +49,36 @@ require_once('partials/_head.php');
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $ret = "SELECT * FROM rpos_orders ORDER BY created_at DESC";
+                                    $ret = "SELECT o.*, c.customer_name FROM rpos_orders o LEFT JOIN rpos_customers c ON o.customer_id = c.customer_id ORDER BY o.created_at DESC";
                                     $stmt = $mysqli->prepare($ret);
                                     $stmt->execute();
                                     $res = $stmt->get_result();
+                                    $i = 1;
                                     while ($order = $res->fetch_object()) {
-                                        $total = ($order->prod_price * $order->prod_qty);
-                                    ?>
-                                        <tr>
-                                            <td class="text-success"><?php echo htmlspecialchars($order->order_code); ?></td>
-                                            <td><?php echo htmlspecialchars($order->customer_name); ?></td>
-                                            <td class="text-success"><?php echo htmlspecialchars($order->prod_name); ?></td>
-                                            <td>$ <?php echo number_format($order->prod_price, 2); ?></td>
-                                            <td class="text-success"><?php echo htmlspecialchars($order->prod_qty); ?></td>
-                                            <td>$ <?php echo number_format($total, 2); ?></td>
-                                            <td>
-                                                <?php echo ($order->order_status == '') ? "<span class='badge badge-danger'>Not Paid</span>" : "<span class='badge badge-success'>" . htmlspecialchars($order->order_status) . "</span>"; ?>
-                                            </td>
-                                            <td><?php echo date('d/M/Y g:i A', strtotime($order->created_at)); ?></td>
-                                        </tr>
-                                    <?php } ?>
+                                        $items = json_decode($order->items, true);
+                                        if (is_array($items)) {
+                                            foreach ($items as $item) {
+                                                $qty = isset($item['prod_qty']) ? $item['prod_qty'] : 1;
+                                                $price = isset($item['prod_price']) ? $item['prod_price'] : 0;
+                                                $total = $price * $qty;
+                                                ?>
+                                                <tr>
+                                                    <td class="text-success"><?php echo $i++; ?></td>
+                                                    <td><?php echo htmlspecialchars($order->customer_name); ?></td>
+                                                    <td class="text-success"><?php echo htmlspecialchars($item['prod_name']); ?>
+                                                    </td>
+                                                    <td>RWF <?php echo number_format($price, 2); ?></td>
+                                                    <td class="text-success"><?php echo $qty; ?></td>
+                                                    <td>RWF <?php echo number_format($total, 2); ?></td>
+                                                    <td>
+                                                        <?php echo ($order->status == 'pending') ? "<span class='badge badge-danger'>Not Paid</span>" : "<span class='badge badge-success'>" . htmlspecialchars($order->status) . "</span>"; ?>
+                                                    </td>
+                                                    <td><?php echo date('d/M/Y g:i A', strtotime($order->created_at)); ?></td>
+                                                </tr>
+                                                <?php
+                                            }
+                                        }
+                                    } ?>
                                 </tbody>
                             </table>
                         </div>
@@ -83,7 +94,7 @@ require_once('partials/_head.php');
         function printReport() {
             var content = document.getElementById("reportContent").innerHTML;
             var originalContent = document.body.innerHTML;
-            
+
             document.body.innerHTML = `
                 <html>
                 <head>
@@ -119,7 +130,7 @@ require_once('partials/_head.php');
                 </body>
                 </html>
             `;
-            
+
             window.print();
             document.body.innerHTML = originalContent;
             location.reload();
@@ -129,4 +140,5 @@ require_once('partials/_head.php');
     <!-- Argon Scripts -->
     <?php require_once('partials/_scripts.php'); ?>
 </body>
+
 </html>
