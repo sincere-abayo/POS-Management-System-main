@@ -6,7 +6,7 @@ if (isset($_POST['login'])) {
   $staff_email = $_POST['staff_email'];
   $staff_password = sha1(md5($_POST['staff_password'])); //double encrypt to increase security
   $stmt = $mysqli->prepare("SELECT staff_email, staff_password, staff_id  FROM   rpos_staff WHERE (staff_email =? AND staff_password =?)"); //sql to log in user
-  $stmt->bind_param('ss',  $staff_email, $staff_password); //bind fetched parameters
+  $stmt->bind_param('ss', $staff_email, $staff_password); //bind fetched parameters
   $stmt->execute(); //execute bind 
   $stmt->bind_result($staff_email, $staff_password, $staff_id); //bind result
   $rs = $stmt->fetch();
@@ -28,7 +28,7 @@ require_once('partials/_head.php');
         <div class="header-body text-center mb-7">
           <div class="row justify-content-center">
             <div class="col-lg-5 col-md-6">
-              <h1 class="text-white">Point Of Sale Management System</h1>
+              <h1 class="text-white">Based Retail operations management system</h1>
             </div>
           </div>
         </div>

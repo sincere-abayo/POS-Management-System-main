@@ -6,7 +6,7 @@ if (isset($_POST['login'])) {
     $customer_email = $_POST['customer_email'];
     $customer_password = sha1(md5($_POST['customer_password'])); //double encrypt to increase security
     $stmt = $mysqli->prepare("SELECT customer_email, customer_password, customer_id  FROM  rpos_customers WHERE (customer_email =? AND customer_password =?)"); //sql to log in user
-    $stmt->bind_param('ss',  $customer_email, $customer_password); //bind fetched parameters
+    $stmt->bind_param('ss', $customer_email, $customer_password); //bind fetched parameters
     $stmt->execute(); //execute bind 
     $stmt->bind_result($customer_email, $customer_password, $customer_id); //bind result
     $rs = $stmt->fetch();
@@ -28,7 +28,7 @@ require_once('partials/_head.php');
                 <div class="header-body text-center mb-7">
                     <div class="row justify-content-center">
                         <div class="col-lg-5 col-md-6">
-                            <h1 class="text-white">Point Of Sale Management System</h1>
+                            <h1 class="text-white">Based Retail operations management system</h1>
                         </div>
                     </div>
                 </div>
@@ -46,7 +46,8 @@ require_once('partials/_head.php');
                                         <div class="input-group-prepend">
                                             <span class="input-group-text"><i class="ni ni-email-83"></i></span>
                                         </div>
-                                        <input class="form-control" required name="customer_email" placeholder="Email" type="email">
+                                        <input class="form-control" required name="customer_email" placeholder="Email"
+                                            type="email">
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -54,7 +55,8 @@ require_once('partials/_head.php');
                                         <div class="input-group-prepend">
                                             <span class="input-group-text"><i class="ni ni-lock-circle-open"></i></span>
                                         </div>
-                                        <input class="form-control" required name="customer_password" placeholder="Password" type="password">
+                                        <input class="form-control" required name="customer_password"
+                                            placeholder="Password" type="password">
                                     </div>
                                 </div>
                                 <div class="custom-control custom-control-alternative custom-checkbox">
@@ -66,7 +68,8 @@ require_once('partials/_head.php');
                                 <div class="form-group">
                                     <div class="text-left">
                                         <button type="submit" name="login" class="btn btn-primary my-4">Log In</button>
-                                        <a href="create_account.php" class=" btn btn-success pull-right">Create Account</a>
+                                        <a href="create_account.php" class=" btn btn-success pull-right">Create
+                                            Account</a>
                                     </div>
                                 </div>
                             </form>

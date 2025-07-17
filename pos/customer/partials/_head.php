@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="Start your development with a Dashboard for Bootstrap 4.">
     <meta name="author" content="MartDevelopers Inc">
-    <title>Point Of Sale Management system </title>
+    <title>Based Retail operations management system </title>
     <!-- Favicon -->
     <link rel="apple-touch-icon" sizes="180x180" href="../admin/assets/img/icons/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="../admin/assets/img/icons/favicon-32x32.png">
@@ -27,9 +27,9 @@
     <?php if (isset($success)) { ?>
         <!--This code for injecting success alert-->
         <script>
-            setTimeout(function() {
-                    swal("Success", "<?php echo $success; ?>", "success");
-                },
+            setTimeout(function () {
+                swal("Success", "<?php echo $success; ?>", "success");
+            },
                 100);
         </script>
 
@@ -37,9 +37,9 @@
     <?php if (isset($err)) { ?>
         <!--This code for injecting error alert-->
         <script>
-            setTimeout(function() {
-                    swal("Failed", "<?php echo $err; ?>", "error");
-                },
+            setTimeout(function () {
+                swal("Failed", "<?php echo $err; ?>", "error");
+            },
                 100);
         </script>
 
@@ -47,9 +47,9 @@
     <?php if (isset($info)) { ?>
         <!--This code for injecting info alert-->
         <script>
-            setTimeout(function() {
-                    swal("Success", "<?php echo $info; ?>", "info");
-                },
+            setTimeout(function () {
+                swal("Success", "<?php echo $info; ?>", "info");
+            },
                 100);
         </script>
 
@@ -61,7 +61,7 @@
                 type: "POST",
                 url: "customer_ajax.php",
                 data: 'custName=' + val,
-                success: function(data) {
+                success: function (data) {
                     //alert(data);
                     $('#customerID').val(data);
                 }
