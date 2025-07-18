@@ -26,7 +26,7 @@ if (isset($_GET['email']) && $_GET['email'] == 1 && isset($_GET['order_id'])) {
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px;">
                 <h2 style="color: #333; margin: 0;">BEST FRIEND SUPERMARKET</h2>
-                <p style="margin: 5px 0;">KIGALI, Kimironko</p>
+                <p style="margin: 5px 0;">REMERA, GISEMENTI</p>
                 <p style="margin: 5px 0;">0785617132</p>
             </div>
             <div style="margin-bottom: 20px;">

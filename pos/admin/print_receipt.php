@@ -92,7 +92,7 @@ if ($order_id) {
                 }
             }
             $mail->Body .= '</tbody><tfoot><tr><th colspan="4" align="right">Total</th><th align="center">RWF ' . htmlspecialchars($total) . '</th></tr></tfoot></table>';
-            $mail->Body .= '<hr><p style="font-size:13px;color:#888;">Best Friend Supermarket, Kigali, Kimironko<br>Thank you for shopping with us!</p>';
+            $mail->Body .= '<hr><p style="font-size:13px;color:#888;">Best Friend Supermarket, REMERA, GISEMENTI<br>Thank you for shopping with us!</p>';
             $mail->send();
             echo '<div class="alert alert-success mt-3">Receipt emailed to ' . htmlspecialchars($customer_email) . '.</div>';
         } catch (Exception $e) {
@@ -152,7 +152,7 @@ if ($order_id) {
                             <address>
                                 <strong>BEST FRIEND SUPERMARKET</strong>
                                 <br>
-                                KIGALI, Kimironko
+                                REMERA, GISEMENTI
                                 <br>
                                 +250785617132
                             </address>
