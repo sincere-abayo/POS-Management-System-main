@@ -62,43 +62,30 @@ require_once('partials/_head.php');
                                                 $price = isset($item['prod_price']) ? $item['prod_price'] : 0;
                                                 $total = $price * $qty;
                                                 ?>
-                                                <tr>
-                                                    <td class="text-success"><?php echo $i++; ?></td>
-                                                    <td><?php echo htmlspecialchars($order->customer_name); ?></td>
-                                                    <td class="text-success"><?php echo htmlspecialchars($item['prod_name']); ?>
-                                                    </td>
-                                                    <td>RWF <?php echo number_format($price, 2); ?></td>
-                                                    <td class="text-success"><?php echo $qty; ?></td>
-                                                    <td>RWF <?php echo number_format($total, 2); ?></td>
-                                                    <td>
-                                                        <?php
+                                    <tr>
+                                        <td class="text-success"><?php echo $i++; ?></td>
+                                        <td><?php echo htmlspecialchars($order->customer_name ?? ''); ?></td>
+                                        <td class="text-success"><?php echo htmlspecialchars($item['prod_name']); ?>
+                                        </td>
+                                        <td>RWF <?php echo number_format($price, 2); ?></td>
+                                        <td class="text-success"><?php echo $qty; ?></td>
+                                        <td>RWF <?php echo number_format($total, 2); ?></td>
+                                        <td>
+                                            <?php
                                                         if ($order->order_type == 'online' && $order->status != 'pending') {
                                                             ?>
-                                                            <form method="post" style="display:inline;">
-                                                                <input type="hidden" name="order_id"
-                                                                    value="<?php echo $order->order_id; ?>">
-                                                                <select name="new_status"
-                                                                    class="form-control form-control-sm d-inline w-auto"
-                                                                    onchange="this.form.submit()">
-                                                                    <option value="packed" <?php if ($order->status == 'packed')
-                                                                        echo 'selected'; ?>>Packed</option>
-                                                                    <option value="delivered" <?php if ($order->status == 'delivered')
-                                                                        echo 'selected'; ?>>Delivered</option>
-                                                                    <option value="cancelled" <?php if ($order->status == 'cancelled')
-                                                                        echo 'selected'; ?>>Cancelled</option>
-                                                                </select>
-                                                            </form>
-                                                            <span
-                                                                class='badge badge-success ml-2'><?php echo htmlspecialchars($order->status); ?></span>
-                                                            <?php
+
+                                            <span
+                                                class='badge badge-success ml-2'><?php echo htmlspecialchars($order->status); ?></span>
+                                            <?php
                                                         } else {
                                                             echo ($order->status == 'pending') ? "<span class='badge badge-danger'>Not Paid</span>" : "<span class='badge badge-success'>" . htmlspecialchars($order->status) . "</span>";
                                                         }
                                                         ?>
-                                                    </td>
-                                                    <td><?php echo date('d/M/Y g:i A', strtotime($order->created_at)); ?></td>
-                                                </tr>
-                                                <?php
+                                        </td>
+                                        <td><?php echo date('d/M/Y g:i A', strtotime($order->created_at)); ?></td>
+                                    </tr>
+                                    <?php
                                             }
                                         }
                                     } ?>
@@ -114,11 +101,11 @@ require_once('partials/_head.php');
 
     <!-- Print Script -->
     <script>
-        function printReport() {
-            var content = document.getElementById("reportContent").innerHTML;
-            var originalContent = document.body.innerHTML;
+    function printReport() {
+        var content = document.getElementById("reportContent").innerHTML;
+        var originalContent = document.body.innerHTML;
 
-            document.body.innerHTML = `
+        document.body.innerHTML = `
                 <html>
                 <head>
                     <title>Order Report</title>
@@ -154,10 +141,10 @@ require_once('partials/_head.php');
                 </html>
             `;
 
-            window.print();
-            document.body.innerHTML = originalContent;
-            location.reload();
-        }
+        window.print();
+        document.body.innerHTML = originalContent;
+        location.reload();
+    }
     </script>
 
     <!-- Argon Scripts -->

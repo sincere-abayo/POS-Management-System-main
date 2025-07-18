@@ -105,62 +105,62 @@ require_once('partials/_head.php');
                                         $has_payment = $pay_stmt->fetch();
                                         $pay_stmt->close();
                                         ?>
-                                    <tr>
-                                        <td>
-                                            <?php echo htmlspecialchars($order->customer_name); ?><br>
-                                            <?php echo htmlspecialchars($order->customer_phoneno); ?><br>
-                                            <?php if (strpos($order->customer_email, '@noemail.com') === false)
+                                        <tr>
+                                            <td>
+                                                <?php echo htmlspecialchars($order->customer_name ?? ''); ?><br>
+                                                <?php echo htmlspecialchars($order->customer_phoneno ?? ''); ?><br>
+                                                <?php if (!empty($order->customer_email) && strpos($order->customer_email, '@noemail.com') === false)
                                                     echo htmlspecialchars($order->customer_email); ?>
-                                        </td>
-                                        <td>
-                                            <?php
+                                            </td>
+                                            <td>
+                                                <?php
                                                 echo htmlspecialchars($product_names[0]);
                                                 if (count($product_names) > 1) {
                                                     echo ' +' . (count($product_names) - 1) . ' more';
                                                 }
                                                 ?>
-                                        </td>
-                                        <td>RWF <?php echo number_format($total, 2); ?></td>
-                                        <td>
-                                            <?php
+                                            </td>
+                                            <td>RWF <?php echo number_format($total, 2); ?></td>
+                                            <td>
+                                                <?php
                                                 if ($has_payment && $pay_status == 'paid') {
                                                     echo "<span class='badge badge-success'>Paid</span>";
                                                 } else {
                                                     echo "<span class='badge badge-danger'>Unpaid</span>";
                                                 }
                                                 ?>
-                                        </td>
-                                        <td>
-                                            <?php
+                                            </td>
+                                            <td>
+                                                <?php
                                                 if ($order->order_type == 'online') {
                                                     ?>
-                                            <form method="post" style="display:inline;">
-                                                <input type="hidden" name="order_id"
-                                                    value="<?php echo $order->order_id; ?>">
-                                                <select name="new_status"
-                                                    class="form-control form-control-sm d-inline w-auto"
-                                                    onchange="this.form.submit()">
-                                                    <option value="pending" <?php if ($order->status == 'pending')
+                                                    <form method="post" style="display:inline;">
+                                                        <input type="hidden" name="order_id"
+                                                            value="<?php echo $order->order_id; ?>">
+                                                        <select name="new_status"
+                                                            class="form-control form-control-sm d-inline w-auto"
+                                                            onchange="this.form.submit()">
+                                                            <option value="pending" <?php if ($order->status == 'pending')
                                                                 echo 'selected'; ?>>Pending</option>
-                                                    <option value="packed" <?php if ($order->status == 'packed')
+                                                            <option value="packed" <?php if ($order->status == 'packed')
                                                                 echo 'selected'; ?>>Packed</option>
-                                                    <option value="delivered" <?php if ($order->status == 'delivered')
+                                                            <option value="delivered" <?php if ($order->status == 'delivered')
                                                                 echo 'selected'; ?>>Delivered</option>
-                                                    <option value="cancelled" <?php if ($order->status == 'cancelled')
+                                                            <option value="cancelled" <?php if ($order->status == 'cancelled')
                                                                 echo 'selected'; ?>>Cancelled</option>
-                                                </select>
-                                            </form>
-                                            <span
-                                                class='badge badge-success ml-2'><?php echo htmlspecialchars($order->status); ?></span>
-                                            <?php
+                                                        </select>
+                                                    </form>
+                                                    <span
+                                                        class='badge badge-success ml-2'><?php echo htmlspecialchars($order->status); ?></span>
+                                                    <?php
                                                 } else {
                                                     echo ucfirst($order->status);
                                                 }
                                                 ?>
-                                        </td>
-                                        <td><?php echo ucfirst(str_replace('_', ' ', $order->order_type)); ?></td>
-                                        <td><?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></td>
-                                    </tr>
+                                            </td>
+                                            <td><?php echo ucfirst(str_replace('_', ' ', $order->order_type)); ?></td>
+                                            <td><?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></td>
+                                        </tr>
                                     <?php } ?>
                                 </tbody>
                             </table>
@@ -172,19 +172,19 @@ require_once('partials/_head.php');
         </div>
     </div>
     <style>
-    @media print {
+        @media print {
 
-        .btn,
-        form,
-        .main-content .card-header {
-            display: none !important;
+            .btn,
+            form,
+            .main-content .card-header {
+                display: none !important;
+            }
         }
-    }
     </style>
     <script>
-    function printReport() {
-        window.print();
-    }
+        function printReport() {
+            window.print();
+        }
     </script>
     <?php require_once('partials/_scripts.php'); ?>
 </body>

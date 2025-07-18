@@ -81,7 +81,7 @@ CREATE TABLE `rpos_orders` (
   `customer_id` varchar(200) DEFAULT NULL,
   `order_type` enum('online','in_person') NOT NULL,
   `items` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`items`)),
-  `status` enum('pending','packed','delivered','cancelled') DEFAULT 'pending',
+  `status` enum('pending','packed','delivered','confirmed','cancelled') DEFAULT 'pending',
   `payment_id` int(11) DEFAULT NULL,
   `delivery_address` text DEFAULT NULL,
   `created_at` datetime DEFAULT current_timestamp(),
