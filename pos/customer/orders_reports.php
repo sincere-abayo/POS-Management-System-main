@@ -46,6 +46,7 @@ require_once('partials/_head.php');
                                         <th scope="col">Order Status</th>
                                         <th scope="col">Order Type</th>
                                         <th class="text-success" scope="col">Date</th>
+                                        <th scope="col">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -74,19 +75,19 @@ require_once('partials/_head.php');
                                         $has_payment = $pay_stmt->fetch();
                                         $pay_stmt->close();
                                         ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($order->customer_name); ?></td>
-                                        <td>
-                                            <?php
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($order->customer_name); ?></td>
+                                            <td>
+                                                <?php
                                                 echo htmlspecialchars($product_names[0]);
                                                 if (count($product_names) > 1) {
                                                     echo ' +' . (count($product_names) - 1) . ' more';
                                                 }
                                                 ?>
-                                        </td>
-                                        <td>RWF <?php echo number_format($total, 2); ?></td>
-                                        <td>
-                                            <?php
+                                            </td>
+                                            <td>RWF <?php echo number_format($total, 2); ?></td>
+                                            <td>
+                                                <?php
                                                 if ($has_payment && $pay_status == 'paid') {
                                                     echo "<span class='badge badge-success'>Paid</span>";
                                                 } else {
@@ -94,20 +95,27 @@ require_once('partials/_head.php');
                                                     echo "<a href='pay_order.php?order_id=" . urlencode($order->order_id) . "' class='btn btn-sm btn-primary ml-2'>Pay</a>";
                                                 }
                                                 ?>
-                                        </td>
-                                        <td>
-                                            <?php
+                                            </td>
+                                            <td>
+                                                <?php
                                                 echo ($order->status == 'pending') ? "<span class='badge badge-danger'>Pending</span>" : "<span class='badge badge-success'>" . htmlspecialchars($order->status) . "</span>";
                                                 if ($order->order_type == 'online') {
                                                     echo ' <button type="button" class="btn btn-sm btn-info ml-2 track-btn" data-order-id="' . $order->order_id . '" data-status="' . htmlspecialchars($order->status) . '">Track</button>';
                                                 }
                                                 ?>
-                                        </td>
-                                        <td><?php echo ucfirst(str_replace('_', ' ', $order->order_type)); ?></td>
-                                        <td class="text-success">
-                                            <?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?>
-                                        </td>
-                                    </tr>
+                                            </td>
+                                            <td><?php echo ucfirst(str_replace('_', ' ', $order->order_type)); ?></td>
+                                            <td class="text-success">
+                                                <?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?>
+                                            </td>
+                                            <td>
+                                                <?php if ($order->status == 'delivered') { ?>
+                                                    <button class="btn btn-sm btn-success confirm-received-btn"
+                                                        data-order-id="<?php echo $order->order_id; ?>">Confirm
+                                                        Received</button>
+                                                <?php } ?>
+                                            </td>
+                                        </tr>
                                     <?php } ?>
                                 </tbody>
                             </table>
@@ -146,23 +154,46 @@ require_once('partials/_head.php');
         </div>
     </div>
     <script>
-    // Show tracking modal with timeline
-    const statusSteps = ['pending', 'packed', 'delivered', 'cancelled'];
-    document.querySelectorAll('.track-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const status = this.getAttribute('data-status');
-            let timeline = '<ul class="list-group">';
-            for (let step of statusSteps) {
-                let active = (step === status) ? 'list-group-item-success' : '';
-                timeline +=
-                    `<li class="list-group-item ${active}">${step.charAt(0).toUpperCase() + step.slice(1)}</li>`;
-                if (step === status) break;
-            }
-            timeline += '</ul>';
-            document.getElementById('trackingTimeline').innerHTML = timeline;
-            $('#trackModal').modal('show');
+        // Show tracking modal with timeline
+        const statusSteps = ['pending', 'packed', 'delivered', 'cancelled'];
+        document.querySelectorAll('.track-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const status = this.getAttribute('data-status');
+                let timeline = '<ul class="list-group">';
+                for (let step of statusSteps) {
+                    let active = (step === status) ? 'list-group-item-success' : '';
+                    timeline +=
+                        `<li class="list-group-item ${active}">${step.charAt(0).toUpperCase() + step.slice(1)}</li>`;
+                    if (step === status) break;
+                }
+                timeline += '</ul>';
+                document.getElementById('trackingTimeline').innerHTML = timeline;
+                $('#trackModal').modal('show');
+            });
         });
-    });
+        // Confirm Received AJAX
+        $(document).on('click', '.confirm-received-btn', function () {
+            var btn = $(this);
+            var orderId = btn.data('order-id');
+            if (confirm('Are you sure you have received this order?')) {
+                $.ajax({
+                    url: 'confirm_received.php',
+                    type: 'POST',
+                    data: { order_id: orderId },
+                    success: function (response) {
+                        if (response.success) {
+                            btn.replaceWith('<span class="badge badge-info">Received</span>');
+                            alert('Thank you for confirming receipt!');
+                        } else {
+                            alert('Error: ' + response.message);
+                        }
+                    },
+                    error: function () {
+                        alert('Failed to confirm receipt. Please try again.');
+                    }
+                });
+            }
+        });
     </script>
 </body>
 
