@@ -173,8 +173,8 @@ $customer_phone = $order->customer_phoneno ? $order->customer_phoneno : '-';
 $customer_email = ($order->customer_email && strpos($order->customer_email, '@noemail.com') === false) ? $order->customer_email : '-';
 ?>
 
-<body>
-    <div class="container">
+    <body>
+        <div class="container">
         <div class="row noprint">
             <div class="col-12 mb-3 mt-3">
                 <a href="javascript:history.back()" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Back</a>
@@ -183,31 +183,31 @@ $customer_email = ($order->customer_email && strpos($order->customer_email, '@no
         <?php if (isset($email_status)) { ?>
             <div class="alert alert-info text-center noprint"><?php echo $email_status; ?></div>
         <?php } ?>
-        <div class="row">
-            <div id="Receipt" class="well col-xs-10 col-sm-10 col-md-6 col-xs-offset-1 col-sm-offset-1 col-md-offset-3">
-                <div class="row">
-                    <div class="col-xs-6 col-sm-6 col-md-6">
-                        <address>
+            <div class="row">
+                <div id="Receipt" class="well col-xs-10 col-sm-10 col-md-6 col-xs-offset-1 col-sm-offset-1 col-md-offset-3">
+                    <div class="row">
+                        <div class="col-xs-6 col-sm-6 col-md-6">
+                            <address>
                             <strong>BEST FRIEND SUPERMARKET</strong>
-                            <br>
-                            KIGALI, Kimironko
-                            <br>
-                            0785617132
-                        </address>
-                    </div>
-                    <div class="col-xs-6 col-sm-6 col-md-6 text-right">
-                        <p>
-                            <em>Date: <?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></em>
-                        </p>
-                        <p>
+                                <br>
+                                KIGALI, Kimironko
+                                <br>
+                                0785617132
+                            </address>
+                        </div>
+                        <div class="col-xs-6 col-sm-6 col-md-6 text-right">
+                            <p>
+                                <em>Date: <?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?></em>
+                            </p>
+                            <p>
                             <em class="text-success">Receipt #: <?php echo $order_id; ?></em>
-                        </p>
+                            </p>
+                        </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="text-center">
-                        <h2>Receipt</h2>
-                    </div>
+                    <div class="row">
+                        <div class="text-center">
+                            <h2>Receipt</h2>
+                        </div>
                     <div class="mb-2">
                         <b>Order ID:</b> <?php echo $order_id; ?><br>
                         <b>Order Date:</b> <?php echo date('d/M/Y g:i', strtotime($order->created_at)); ?><br>
@@ -217,17 +217,17 @@ $customer_email = ($order->customer_email && strpos($order->customer_email, '@no
                             <b>Email:</b> <?php echo htmlspecialchars($customer_email); ?><br>
                         <?php } ?>
                     </div>
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Item</th>
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
                                 <th>Code</th>
-                                <th>Quantity</th>
-                                <th class="text-center">Unit Price</th>
+                                    <th>Quantity</th>
+                                    <th class="text-center">Unit Price</th>
                                 <th class="text-center">Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
+                                </tr>
+                            </thead>
+                            <tbody>
                             <?php
                             $total = 0;
                             if (is_array($items) && count($items) > 0) {
@@ -255,9 +255,9 @@ $customer_email = ($order->customer_email && strpos($order->customer_email, '@no
                             <tr>
                                 <th colspan="4" class="text-right">Total</th>
                                 <th class="text-center">RWF <?php echo htmlspecialchars($total); ?></th>
-                            </tr>
+                                </tr>
                         </tfoot>
-                    </table>
+                        </table>
                     <div class="text-center mt-4 noprint">
                         <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print"></i> Print
                             Receipt</button>
@@ -267,10 +267,10 @@ $customer_email = ($order->customer_email && strpos($order->customer_email, '@no
                         <?php } ?>
                     </div>
                 </div>
+                </div>
             </div>
         </div>
-    </div>
-</body>
+    </body>
 
 </html>
 <script>
