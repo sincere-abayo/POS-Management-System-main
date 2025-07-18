@@ -11,6 +11,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
     $stmt->bind_param('si', $new_status, $order_id);
     $stmt->execute();
     $stmt->close();
+    // Fetch customer email and name
+    $cust_stmt = $mysqli->prepare("SELECT c.customer_email, c.customer_name FROM rpos_orders o LEFT JOIN rpos_customers c ON o.customer_id = c.customer_id WHERE o.order_id = ?");
+    $cust_stmt->bind_param('i', $order_id);
+    $cust_stmt->execute();
+    $cust_stmt->bind_result($customer_email, $customer_name);
+    if ($cust_stmt->fetch() && !empty($customer_email) && strpos($customer_email, '@noemail.com') === false) {
+        $cust_stmt->close();
+        require_once __DIR__ . '/../../vendor/autoload.php';
+        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'infofonepo@gmail.com';
+            $mail->Password = 'zaoxwuezfjpglwjb';
+            $mail->SMTPSecure = PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
+            $mail->setFrom('infofonepo@gmail.com', 'Best Friend Supermarket');
+            $mail->addAddress($customer_email, $customer_name);
+            $mail->isHTML(true);
+            $mail->Subject = 'Order Status Update - Best Friend Supermarket';
+            $mail->Body = '<p>Dear ' . htmlspecialchars($customer_name) . ',</p>' .
+                '<p>Your order #' . htmlspecialchars($order_id) . ' status has been updated to <b>' . htmlspecialchars(ucfirst($new_status)) . '</b>.</p>' .
+                '<p>Thank you for shopping with us!</p>';
+            $mail->send();
+        } catch (Exception $e) {
+            // Optionally log or ignore
+        }
+    } else {
+        $cust_stmt->close();
+    }
     header("Location: orders_reports.php");
     exit();
 }
