@@ -16,8 +16,8 @@ while ($customer = $res->fetch_object()) {
                 <span class="navbar-toggler-icon"></span>
             </button>
             <!-- Brand -->
-            <a class="navbar-brand pt-0" href="dashboard.php">
-                <img src="../admin/assets/img/brand/dd.png" class="navbar-brand-img" alt="...">
+            <a class="navbar-brand pt-0 d-flex align-items-center" href="dashboard.php" style="min-height:60px;">
+                <span style="font-size:1.2rem;font-weight:bold;color:#2d3748;letter-spacing:1px;line-height:1.2;">BRO<br><span style='font-size:1rem;font-weight:400;color:#4a5568;'>Management System</span></span>
             </a>
             <!-- User -->
             <ul class="nav align-items-center d-md-none">

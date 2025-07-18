@@ -65,6 +65,7 @@ require_once('partials/_head.php');
                 </div>
                 <div class="text-center">
                   <button type="submit" name="login" class="btn btn-primary my-4">Log In</button>
+                  <a href="../../index.php" class="btn btn-link mt-2">Back to Home</a>
                 </div>
               </form>
 
