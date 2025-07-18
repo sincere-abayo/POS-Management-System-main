@@ -32,9 +32,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'], $_POST['n
             $mail->addAddress($customer_email, $customer_name);
             $mail->isHTML(true);
             $mail->Subject = 'Order Status Update - Best Friend Supermarket';
-            $mail->Body = '<p>Dear ' . htmlspecialchars($customer_name) . ',</p>' .
-                '<p>Your order #' . htmlspecialchars($order_id) . ' status has been updated to <b>' . htmlspecialchars(ucfirst($new_status)) . '</b>.</p>' .
-                '<p>Thank you for shopping with us!</p>';
+            $mail->Body = '
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border:1px solid #eee; border-radius:8px; overflow:hidden;">
+    <div style="background: #2d8f2d; color: #fff; padding: 18px 24px; text-align: center;">
+        <h2 style="margin:0; font-size: 1.7rem;">Best Friend Supermarket</h2>
+        <div style="font-size: 1rem; margin-top: 4px;">REMERA, GISEMENTI &bull; 0785617132</div>
+    </div>
+    <div style="padding: 24px;">
+        <h3 style="color: #333; margin-top: 0;">Order Status Update</h3>
+        <p>Dear <b>' . htmlspecialchars($customer_name) . '</b>,</p>
+        <p>Your order <b>#' . htmlspecialchars($order_id) . '</b> status has been updated to:</p>
+        <div style="background: #f8f9fa; border-left: 4px solid #2d8f2d; padding: 16px; margin: 18px 0; border-radius: 4px; font-size: 1.1rem;">
+            <b style="color: #2d8f2d;">' . htmlspecialchars(ucfirst($new_status)) . '</b>
+        </div>
+        <p>If you have any questions or need assistance, please reply to this email or contact us at <a href="tel:0785617132" style="color:#2d8f2d;text-decoration:none;">0785617132</a>.</p>
+        <p style="margin-top: 32px; color: #666;">Thank you for shopping with us!<br>
+        <span style="font-size: 0.95em;">Best Friend Supermarket Team</span></p>
+    </div>
+    <div style="background: #f5f5f5; color: #888; text-align: center; font-size: 0.95em; padding: 12px 0;">
+        &copy; ' . date('Y') . ' Best Friend Supermarket. All rights reserved.
+    </div>
+</div>
+';
             $mail->send();
         } catch (Exception $e) {
             // Optionally log or ignore
