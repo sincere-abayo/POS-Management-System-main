@@ -10,14 +10,14 @@ require_once('partials/_head.php');
 <body>
     <!-- Sidenav -->
     <?php
-  require_once('partials/_sidebar.php');
-  ?>
+    require_once('partials/_sidebar.php');
+    ?>
     <!-- Main content -->
     <div class="main-content">
         <!-- Top navbar -->
         <?php
-    require_once('partials/_topnav.php');
-    ?>
+        require_once('partials/_topnav.php');
+        ?>
         <!-- Header -->
         <div style="background-image: url(assets/img/theme/restro00.jpg); background-size: cover;"
             class="header  pb-8 pt-5 pt-md-8">
@@ -45,34 +45,41 @@ require_once('partials/_head.php');
                                         <th scope="col"><b>Product Code</b></th>
                                         <th scope="col"><b>Name</b></th>
                                         <th scope="col"><b>Price</b></th>
+                                        <th scope="col"><b>Stock Level</b></th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <?php
-                  $ret = "SELECT * FROM  rpos_products ";
-                  $stmt = $mysqli->prepare($ret);
-                  $stmt->execute();
-                  $res = $stmt->get_result();
-                  $i = 1;
-                  while ($prod = $res->fetch_object()) {
-                    $out_of_stock = ($prod->quantity <= 0);
-                    ?>
-                                    <tr>
-                                        <td class="text-success"><?php echo $i++; ?></td>
-                                        <td>
-                                            <?php
-                        if ($prod->prod_img) {
-                          echo "<img src='assets/img/products/$prod->prod_img' height='60' width='60 class='img-thumbnail'>";
-                        } else {
-                          echo "<img src='assets/img/products/default.jpg' height='60' width='60 class='img-thumbnail'>";
-                        }
-                        ?>
-                                        </td>
-                                        <td><?php echo $prod->prod_code; ?></td>
-                                        <td><?php echo $prod->prod_name; ?></td>
-                                        <td>RWF <?php echo $prod->prod_price; ?></td>
-
-                                    </tr>
+                                    $ret = "SELECT * FROM  rpos_products ";
+                                    $stmt = $mysqli->prepare($ret);
+                                    $stmt->execute();
+                                    $res = $stmt->get_result();
+                                    $i = 1;
+                                    while ($prod = $res->fetch_object()) {
+                                        $out_of_stock = ($prod->quantity <= 0);
+                                        ?>
+                                        <tr>
+                                            <td class="text-success"><?php echo $i++; ?></td>
+                                            <td>
+                                                <?php
+                                                if ($prod->prod_img) {
+                                                    echo "<img src='assets/img/products/$prod->prod_img' height='60' width='60' class='img-thumbnail'>";
+                                                } else {
+                                                    echo "<img src='assets/img/products/default.jpg' height='60' width='60' class='img-thumbnail'>";
+                                                }
+                                                ?>
+                                            </td>
+                                            <td><?php echo $prod->prod_code; ?></td>
+                                            <td><?php echo $prod->prod_name; ?></td>
+                                            <td>RWF <?php echo $prod->prod_price; ?></td>
+                                            <td>
+                                                <?php if ($out_of_stock) {
+                                                    echo "<span style='color:red;font-weight:bold;'>Out of Stock</span>";
+                                                } else {
+                                                    echo $prod->quantity;
+                                                } ?>
+                                            </td>
+                                        </tr>
                                     <?php } ?>
                                 </tbody>
                             </table>
@@ -82,14 +89,14 @@ require_once('partials/_head.php');
             </div>
             <!-- Footer -->
             <?php
-      require_once('partials/_footer.php');
-      ?>
+            require_once('partials/_footer.php');
+            ?>
         </div>
     </div>
     <!-- Argon Scripts -->
     <?php
-  require_once('partials/_scripts.php');
-  ?>
+    require_once('partials/_scripts.php');
+    ?>
 </body>
 
 </html>
