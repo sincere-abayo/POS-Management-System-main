@@ -100,67 +100,98 @@ require_once('partials/_head.php');
                             <?php if (isset($success)) {
                                 echo '<div class="alert alert-success">' . $success . '</div>';
                             } ?>
-                            <?php if (isset($err)) {
-                                echo '<div class="alert alert-danger">' . $err . '</div>';
-                            } ?>
+                            <?php if (isset($err)) { ?>
+                                <!-- Error Modal -->
+                                <div class="modal fade" id="orderErrorModal" tabindex="-1" role="dialog"
+                                    aria-labelledby="orderErrorModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title" id="orderErrorModalLabel">Order Placement Failed
+                                                </h5>
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p><?php echo htmlspecialchars($err); ?></p>
+                                                <ul>
+                                                    <li>Please check your cart for out-of-stock or invalid items.</li>
+                                                    <li>Try again, or contact support if the problem persists.</li>
+                                                    <li><a href="cart.php" class="btn btn-link">Return to Cart</a></li>
+                                                </ul>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <script>
+                                    $(document).ready(function () {
+                                        $('#orderErrorModal').modal('show');
+                                    });
+                                </script>
+                            <?php } ?>
                             <?php if (!isset($success)) { ?>
-                            <form method="post">
-                                <h5>Delivery Information</h5>
-                                <div class="form-group">
-                                    <label>Name</label>
-                                    <input type="text" class="form-control"
-                                        value="<?php echo htmlspecialchars($customer_name); ?>" readonly>
-                                </div>
-                                <div class="form-group">
-                                    <label>Phone</label>
-                                    <input type="text" class="form-control"
-                                        value="<?php echo htmlspecialchars($customer_phoneno); ?>" readonly>
-                                </div>
-                                <div class="form-group">
-                                    <label>Email</label>
-                                    <input type="email" class="form-control"
-                                        value="<?php echo htmlspecialchars($customer_email); ?>" readonly>
-                                </div>
-                                <div class="form-group">
-                                    <label>Delivery Address</label>
-                                    <textarea name="delivery_address" class="form-control"
-                                        required><?php echo htmlspecialchars($delivery_address); ?></textarea>
-                                </div>
-                                <h5>Order Summary</h5>
-                                <table class="table table-bordered">
-                                    <thead class="thead-light">
-                                        <tr>
-                                            <th>Product</th>
-                                            <th>Code</th>
-                                            <th>Unit Price</th>
-                                            <th>Quantity</th>
-                                            <th>Subtotal</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php $total = 0;
+                                <form method="post">
+                                    <h5>Delivery Information</h5>
+                                    <div class="form-group">
+                                        <label>Name</label>
+                                        <input type="text" class="form-control"
+                                            value="<?php echo htmlspecialchars($customer_name); ?>" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Phone</label>
+                                        <input type="text" class="form-control"
+                                            value="<?php echo htmlspecialchars($customer_phoneno); ?>" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Email</label>
+                                        <input type="email" class="form-control"
+                                            value="<?php echo htmlspecialchars($customer_email); ?>" readonly>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Delivery Address</label>
+                                        <textarea name="delivery_address" class="form-control"
+                                            required><?php echo htmlspecialchars($delivery_address); ?></textarea>
+                                    </div>
+                                    <h5>Order Summary</h5>
+                                    <table class="table table-bordered">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Product</th>
+                                                <th>Code</th>
+                                                <th>Unit Price</th>
+                                                <th>Quantity</th>
+                                                <th>Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php $total = 0;
                                             foreach ($_SESSION['cart'] as $item) {
                                                 $subtotal = $item['prod_price'] * $item['quantity'];
                                                 $total += $subtotal; ?>
-                                        <tr>
-                                            <td><?php echo htmlspecialchars($item['prod_name']); ?></td>
-                                            <td><?php echo htmlspecialchars($item['prod_code']); ?></td>
-                                            <td>RWF <?php echo htmlspecialchars($item['prod_price']); ?></td>
-                                            <td><?php echo htmlspecialchars($item['quantity']); ?></td>
-                                            <td>RWF <?php echo htmlspecialchars($subtotal); ?></td>
-                                        </tr>
-                                        <?php } ?>
-                                    </tbody>
-                                    <tfoot>
-                                        <tr>
-                                            <th colspan="4" class="text-right">Total:</th>
-                                            <th>RWF <?php echo htmlspecialchars($total); ?></th>
-                                        </tr>
-                                    </tfoot>
-                                </table>
-                                <button type="submit" name="place_order" class="btn btn-success btn-block"><i
-                                        class="fas fa-check"></i> Place Order</button>
-                            </form>
+                                                <tr>
+                                                    <td><?php echo htmlspecialchars($item['prod_name']); ?></td>
+                                                    <td><?php echo htmlspecialchars($item['prod_code']); ?></td>
+                                                    <td>RWF <?php echo htmlspecialchars($item['prod_price']); ?></td>
+                                                    <td><?php echo htmlspecialchars($item['quantity']); ?></td>
+                                                    <td>RWF <?php echo htmlspecialchars($subtotal); ?></td>
+                                                </tr>
+                                            <?php } ?>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="4" class="text-right">Total:</th>
+                                                <th>RWF <?php echo htmlspecialchars($total); ?></th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                    <button type="submit" name="place_order" class="btn btn-success btn-block"><i
+                                            class="fas fa-check"></i> Place Order</button>
+                                </form>
                             <?php } ?>
                         </div>
                     </div>
