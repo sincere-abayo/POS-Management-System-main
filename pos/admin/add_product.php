@@ -115,7 +115,7 @@ require_once('partials/_head.php');
                 <div class="form-row">
                   <div class="col-md-6">
                     <label>Category</label>
-                    <select name="category" class="form-control">
+                    <select name="category" class="form-control" id="category_select" onchange="toggleOtherCategory()">
                       <option value="">Select Category</option>
                       <option value="Fruits">Fruits</option>
                       <option value="Vegetables">Vegetables</option>
@@ -129,6 +129,8 @@ require_once('partials/_head.php');
                       <option value="Personal Care">Personal Care</option>
                       <option value="Other">Other</option>
                     </select>
+                    <input type="text" name="other_category" id="other_category_input" class="form-control mt-2"
+                      placeholder="Enter new category" style="display:none;">
                   </div>
                   <div class="col-md-6">
                     <label>Status</label>
@@ -201,6 +203,23 @@ require_once('partials/_head.php');
       box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, .25);
     }
   </style>
+  <script>
+    function toggleOtherCategory() {
+      var select = document.getElementById('category_select');
+      var otherInput = document.getElementById('other_category_input');
+      if (select.value === 'Other') {
+        otherInput.style.display = '';
+        otherInput.required = true;
+      } else {
+        otherInput.style.display = 'none';
+        otherInput.required = false;
+        otherInput.value = '';
+      }
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+      toggleOtherCategory();
+    });
+  </script>
 </body>
 
 </html>
