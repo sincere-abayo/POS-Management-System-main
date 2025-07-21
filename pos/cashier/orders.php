@@ -76,8 +76,10 @@ require_once('partials/_head.php');
                                             <td><?php echo $prod->prod_name; ?></td>
                                             <td>RWF <?php echo $prod->prod_price; ?></td>
                                             <td>
-                                                <?php if ($out_of_stock) {
+                                                <?php if ($prod->quantity <= 0) {
                                                     echo "<span style='color:red;font-weight:bold;'>Out of Stock</span>";
+                                                } elseif ($prod->quantity > 0 && $prod->quantity < $prod->min_stocks) {
+                                                    echo "<span style='color:orange;font-weight:bold;'><i class='fas fa-exclamation-triangle'></i> Low Stock (" . $prod->quantity . ")</span>";
                                                 } else {
                                                     echo $prod->quantity;
                                                 } ?>
