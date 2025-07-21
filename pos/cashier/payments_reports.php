@@ -3,6 +3,56 @@ session_start();
 include('config/config.php');
 include('config/checklogin.php');
 check_login();
+
+// --- Reporting logic moved to top for notifications ---
+$report_message = '';
+$report_message_type = 'info';
+$payments = [];
+try {
+    $where = '';
+    $params = [];
+    if (!empty($_GET['from']) && !empty($_GET['to'])) {
+        $where = 'WHERE DATE(p.created_at) BETWEEN ? AND ?';
+        $params[] = $_GET['from'];
+        $params[] = $_GET['to'];
+    } elseif (!empty($_GET['from'])) {
+        $where = 'WHERE DATE(p.created_at) >= ?';
+        $params[] = $_GET['from'];
+    } elseif (!empty($_GET['to'])) {
+        $where = 'WHERE DATE(p.created_at) <= ?';
+        $params[] = $_GET['to'];
+    }
+    $ret = "SELECT p.*, o.items FROM rpos_payments p LEFT JOIN rpos_orders o ON p.order_id = o.order_id $where ORDER BY p.created_at DESC";
+    $stmt = $mysqli->prepare($ret);
+    if ($params) {
+        $types = str_repeat('s', count($params));
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $i = 1;
+    $row_count = 0;
+    while ($payment = $res->fetch_object()) {
+        $payments[] = $payment;
+        $row_count++;
+    }
+    if (isset($_GET['from']) || isset($_GET['to'])) {
+        $criteria = [];
+        if (!empty($_GET['from']))
+            $criteria[] = 'From: ' . htmlspecialchars($_GET['from']);
+        if (!empty($_GET['to']))
+            $criteria[] = 'To: ' . htmlspecialchars($_GET['to']);
+        $report_message = 'Report filtered by ' . implode(' and ', $criteria) . '.';
+        $report_message_type = 'info';
+    }
+    if ($row_count === 0) {
+        $report_message = 'No records found for the selected criteria.';
+        $report_message_type = 'warning';
+    }
+} catch (Exception $e) {
+    $report_message = 'Error generating report: ' . $e->getMessage();
+    $report_message_type = 'danger';
+}
 require_once('partials/_head.php');
 ?>
 
@@ -18,6 +68,15 @@ require_once('partials/_head.php');
             </div>
         </div>
         <div class="container-fluid mt--8">
+            <?php if (isset($report_message) && !empty($report_message)) { ?>
+            <div class="alert alert-<?php echo $report_message_type ?? 'info'; ?> alert-dismissible fade show"
+                role="alert">
+                <?php echo $report_message; ?>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <?php } ?>
             <div class="row mb-4">
                 <div class="col-md-12">
                     <form method="get" class="form-inline justify-content-end">
@@ -53,29 +112,8 @@ require_once('partials/_head.php');
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $where = '';
-                                    $params = [];
-                                    if (!empty($_GET['from']) && !empty($_GET['to'])) {
-                                        $where = 'WHERE DATE(p.created_at) BETWEEN ? AND ?';
-                                        $params[] = $_GET['from'];
-                                        $params[] = $_GET['to'];
-                                    } elseif (!empty($_GET['from'])) {
-                                        $where = 'WHERE DATE(p.created_at) >= ?';
-                                        $params[] = $_GET['from'];
-                                    } elseif (!empty($_GET['to'])) {
-                                        $where = 'WHERE DATE(p.created_at) <= ?';
-                                        $params[] = $_GET['to'];
-                                    }
-                                    $ret = "SELECT p.*, o.items FROM rpos_payments p LEFT JOIN rpos_orders o ON p.order_id = o.order_id $where ORDER BY p.created_at DESC";
-                                    $stmt = $mysqli->prepare($ret);
-                                    if ($params) {
-                                        $types = str_repeat('s', count($params));
-                                        $stmt->bind_param($types, ...$params);
-                                    }
-                                    $stmt->execute();
-                                    $res = $stmt->get_result();
                                     $i = 1;
-                                    while ($payment = $res->fetch_object()) {
+                                    foreach ($payments as $payment) {
                                         ?>
                                     <tr>
                                         <th class="text-success" scope="row"><?php echo $i++; ?></th>

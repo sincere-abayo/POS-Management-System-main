@@ -3,6 +3,56 @@ session_start();
 include('config/config.php');
 include('config/checklogin.php');
 check_login();
+
+// --- Reporting logic moved to top for notifications ---
+$report_message = '';
+$report_message_type = 'info';
+$payments = [];
+try {
+    $where = '';
+    $params = [];
+    if (!empty($_GET['from']) && !empty($_GET['to'])) {
+        $where = 'WHERE DATE(p.created_at) BETWEEN ? AND ?';
+        $params[] = $_GET['from'];
+        $params[] = $_GET['to'];
+    } elseif (!empty($_GET['from'])) {
+        $where = 'WHERE DATE(p.created_at) >= ?';
+        $params[] = $_GET['from'];
+    } elseif (!empty($_GET['to'])) {
+        $where = 'WHERE DATE(p.created_at) <= ?';
+        $params[] = $_GET['to'];
+    }
+    $ret = "SELECT p.*, o.items FROM rpos_payments p LEFT JOIN rpos_orders o ON p.order_id = o.order_id $where ORDER BY p.created_at DESC ";
+    $stmt = $mysqli->prepare($ret);
+    if ($params) {
+        $types = str_repeat('s', count($params));
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $i = 1;
+    $row_count = 0;
+    while ($payment = $res->fetch_object()) {
+        $payments[] = $payment;
+        $row_count++;
+    }
+    if (isset($_GET['from']) || isset($_GET['to'])) {
+        $criteria = [];
+        if (!empty($_GET['from']))
+            $criteria[] = 'From: ' . htmlspecialchars($_GET['from']);
+        if (!empty($_GET['to']))
+            $criteria[] = 'To: ' . htmlspecialchars($_GET['to']);
+        $report_message = 'Report filtered by ' . implode(' and ', $criteria) . '.';
+        $report_message_type = 'info';
+    }
+    if ($row_count === 0) {
+        $report_message = 'No records found for the selected criteria.';
+        $report_message_type = 'warning';
+    }
+} catch (Exception $e) {
+    $report_message = 'Error generating report: ' . $e->getMessage();
+    $report_message_type = 'danger';
+}
 require_once('partials/_head.php');
 ?>
 
@@ -28,6 +78,30 @@ require_once('partials/_head.php');
         </div>
         <!-- Page content -->
         <div class="container-fluid mt--8">
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <form method="get" class="form-inline justify-content-end">
+                        <label class="mr-2">From:</label>
+                        <input type="date" name="from" class="form-control mr-2"
+                            value="<?php echo isset($_GET['from']) ? htmlspecialchars($_GET['from']) : ''; ?>">
+                        <label class="mr-2">To:</label>
+                        <input type="date" name="to" class="form-control mr-2"
+                            value="<?php echo isset($_GET['to']) ? htmlspecialchars($_GET['to']) : ''; ?>">
+                        <button type="submit" class="btn btn-info">Filter</button>
+                        <button type="button" class="btn btn-primary ml-2" onclick="printReport()"><i
+                                class="fas fa-print"></i> Print Report</button>
+                    </form>
+                </div>
+            </div>
+            <?php if (isset($report_message) && !empty($report_message)) { ?>
+            <div class="alert alert-<?php echo $report_message_type ?? 'info'; ?> alert-dismissible fade show"
+                role="alert">
+                <?php echo $report_message; ?>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <?php } ?>
             <!-- Table -->
             <div class="row">
                 <div class="col">
@@ -52,17 +126,13 @@ require_once('partials/_head.php');
                                 <tbody>
                                     <?php
                                     $i = 1;
-                                    $ret = "SELECT p.*, o.items FROM rpos_payments p LEFT JOIN rpos_orders o ON p.order_id = o.order_id ORDER BY p.created_at DESC ";
-                                    $stmt = $mysqli->prepare($ret);
-                                    $stmt->execute();
-                                    $res = $stmt->get_result();
-                                    while ($payment = $res->fetch_object()) {
+                                    foreach ($payments as $payment) {
                                         ?>
-                                        <tr>
-                                            <th class="text-success" scope="row"><?php echo $i++; ?></th>
-                                            <td><?php echo ucfirst(htmlspecialchars($payment->method)); ?></td>
-                                            <td>
-                                                <?php
+                                    <tr>
+                                        <th class="text-success" scope="row"><?php echo $i++; ?></th>
+                                        <td><?php echo ucfirst(htmlspecialchars($payment->method)); ?></td>
+                                        <td>
+                                            <?php
                                                 $items = isset($payment->items) ? json_decode($payment->items, true) : null;
                                                 if (is_array($items) && count($items) > 0) {
                                                     $names = array_column($items, 'prod_name');
@@ -74,22 +144,23 @@ require_once('partials/_head.php');
                                                     echo '-';
                                                 }
                                                 ?>
-                                            </td>
-                                            <td>RWF <?php echo number_format($payment->amount, 2); ?></td>
-                                            <td><?php echo ucfirst($payment->status); ?></td>
-                                            <td class="text-success">
-                                                <?php echo date('d/M/Y g:i', strtotime($payment->created_at)) ?></td>
-                                            <td>
-                                                <?php if ($payment->order_id) { ?>
-                                                    <a href="print_receipt.php?order_id=<?php echo $payment->order_id; ?>"
-                                                        target="_blank">
-                                                        <?php echo htmlspecialchars($payment->order_id); ?>
-                                                    </a>
-                                                <?php } else {
+                                        </td>
+                                        <td>RWF <?php echo number_format($payment->amount, 2); ?></td>
+                                        <td><?php echo ucfirst($payment->status); ?></td>
+                                        <td class="text-success">
+                                            <?php echo date('d/M/Y g:i', strtotime($payment->created_at)) ?>
+                                        </td>
+                                        <td>
+                                            <?php if ($payment->order_id) { ?>
+                                            <a href="print_receipt.php?order_id=<?php echo $payment->order_id; ?>"
+                                                target="_blank">
+                                                <?php echo htmlspecialchars($payment->order_id); ?>
+                                            </a>
+                                            <?php } else {
                                                     echo '-';
                                                 } ?>
-                                            </td>
-                                        </tr>
+                                        </td>
+                                    </tr>
                                     <?php } ?>
                                 </tbody>
                             </table>
@@ -105,13 +176,13 @@ require_once('partials/_head.php');
     </div>
 
     <script>
-        function printReport() {
-            var printContents = document.getElementById('reportSection').innerHTML;
-            var originalContents = document.body.innerHTML;
-            document.body.innerHTML = printContents;
-            window.print();
-            document.body.innerHTML = originalContents;
-        }
+    function printReport() {
+        var printContents = document.getElementById('reportSection').innerHTML;
+        var originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
+    }
     </script>
 
     <!-- Argon Scripts -->

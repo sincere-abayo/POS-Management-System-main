@@ -3,6 +3,56 @@ session_start();
 include('config/config.php');
 include('config/checklogin.php');
 check_login();
+
+// --- Reporting logic moved to top for notifications ---
+$report_message = '';
+$report_message_type = 'info';
+$orders = [];
+try {
+    $where = '';
+    $params = [];
+    if (!empty($_GET['from']) && !empty($_GET['to'])) {
+        $where = 'WHERE DATE(o.created_at) BETWEEN ? AND ?';
+        $params[] = $_GET['from'];
+        $params[] = $_GET['to'];
+    } elseif (!empty($_GET['from'])) {
+        $where = 'WHERE DATE(o.created_at) >= ?';
+        $params[] = $_GET['from'];
+    } elseif (!empty($_GET['to'])) {
+        $where = 'WHERE DATE(o.created_at) <= ?';
+        $params[] = $_GET['to'];
+    }
+    $ret = "SELECT o.*, c.customer_name FROM rpos_orders o LEFT JOIN rpos_customers c ON o.customer_id = c.customer_id $where ORDER BY o.created_at DESC";
+    $stmt = $mysqli->prepare($ret);
+    if ($params) {
+        $types = str_repeat('s', count($params));
+        $stmt->bind_param($types, ...$params);
+    }
+    $stmt->execute();
+    $res = $stmt->get_result();
+    $i = 1;
+    $row_count = 0;
+    while ($order = $res->fetch_object()) {
+        $orders[] = $order;
+        $row_count++;
+    }
+    if (isset($_GET['from']) || isset($_GET['to'])) {
+        $criteria = [];
+        if (!empty($_GET['from']))
+            $criteria[] = 'From: ' . htmlspecialchars($_GET['from']);
+        if (!empty($_GET['to']))
+            $criteria[] = 'To: ' . htmlspecialchars($_GET['to']);
+        $report_message = 'Report filtered by ' . implode(' and ', $criteria) . '.';
+        $report_message_type = 'info';
+    }
+    if ($row_count === 0) {
+        $report_message = 'No records found for the selected criteria.';
+        $report_message_type = 'warning';
+    }
+} catch (Exception $e) {
+    $report_message = 'Error generating report: ' . $e->getMessage();
+    $report_message_type = 'danger';
+}
 require_once('partials/_head.php');
 ?>
 
@@ -26,6 +76,30 @@ require_once('partials/_head.php');
 
         <!-- Page content -->
         <div class="container-fluid mt--8">
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <form method="get" class="form-inline justify-content-end">
+                        <label class="mr-2">From:</label>
+                        <input type="date" name="from" class="form-control mr-2"
+                            value="<?php echo isset($_GET['from']) ? htmlspecialchars($_GET['from']) : ''; ?>">
+                        <label class="mr-2">To:</label>
+                        <input type="date" name="to" class="form-control mr-2"
+                            value="<?php echo isset($_GET['to']) ? htmlspecialchars($_GET['to']) : ''; ?>">
+                        <button type="submit" class="btn btn-info">Filter</button>
+                        <button type="button" class="btn btn-primary ml-2" onclick="printReport()"><i
+                                class="fas fa-print"></i> Print Report</button>
+                    </form>
+                </div>
+            </div>
+            <?php if (isset($report_message) && !empty($report_message)) { ?>
+            <div class="alert alert-<?php echo $report_message_type ?? 'info'; ?> alert-dismissible fade show"
+                role="alert">
+                <?php echo $report_message; ?>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <?php } ?>
             <div class="row">
                 <div class="col">
                     <div class="card shadow">
@@ -49,12 +123,8 @@ require_once('partials/_head.php');
                                 </thead>
                                 <tbody>
                                     <?php
-                                    $ret = "SELECT o.*, c.customer_name FROM rpos_orders o LEFT JOIN rpos_customers c ON o.customer_id = c.customer_id ORDER BY o.created_at DESC";
-                                    $stmt = $mysqli->prepare($ret);
-                                    $stmt->execute();
-                                    $res = $stmt->get_result();
                                     $i = 1;
-                                    while ($order = $res->fetch_object()) {
+                                    foreach ($orders as $order) {
                                         $items = json_decode($order->items, true);
                                         if (is_array($items)) {
                                             foreach ($items as $item) {
@@ -88,7 +158,8 @@ require_once('partials/_head.php');
                                     <?php
                                             }
                                         }
-                                    } ?>
+                                    }
+                                    ?>
                                 </tbody>
                             </table>
                         </div>
